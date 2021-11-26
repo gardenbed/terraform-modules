@@ -2,8 +2,8 @@
 # https://www.terraform.io/docs/language/expressions/type-constraints.html
 
 output "availability_zones" {
-  value       = slice(data.aws_availability_zones.available.names, 0, local.az_len)
   description = "A list of availability zones."
+  value       = slice(data.aws_availability_zones.available.names, 0, local.az_len)
 }
 
 output "vpc" {
@@ -33,14 +33,14 @@ output "private_subnets" {
 }
 
 output "elastic_ips" {
-  value       = aws_eip.nat.*.public_ip
   description = "A list of elastic public IP addresses."
+  value       = aws_eip.nat.*.public_ip
 }
 
 output "bastion" {
   description = "The bastion hosts information."
-  value = {
+  value = var.enable_bastion ? {
     security_group_id = aws_security_group.bastion.0.id
-    public_ip         = data.aws_instance.bastion.public_ip
-  }
+    public_ip         = data.aws_instance.bastion.0.public_ip
+  } : null
 }

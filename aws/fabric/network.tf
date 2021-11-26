@@ -30,7 +30,7 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
   enable_dns_hostnames = false
 
-  tags = merge(var.metadata, var.vpc_tags, {
+  tags = merge(var.common_tags, var.vpc_tags, {
     "Name"   = var.name
     "Region" = var.region
   })
@@ -54,7 +54,7 @@ resource "aws_subnet" "public" {
   cidr_block        = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
-  tags = merge(var.metadata, var.public_subnet_tags, {
+  tags = merge(var.common_tags, var.public_subnet_tags, {
     "Name"   = format("%s-public-%d", var.name, count.index + 1)
     "Region" = var.region
   })
@@ -74,7 +74,7 @@ resource "aws_subnet" "private" {
   cidr_block        = cidrsubnet(aws_vpc.main.cidr_block, 8, 128 + count.index)
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
-  tags = merge(var.metadata, var.private_subnet_tags, {
+  tags = merge(var.common_tags, var.private_subnet_tags, {
     "Name"   = format("%s-private-%d", var.name, count.index + 1)
     "Region" = var.region
   })
@@ -97,7 +97,7 @@ resource "aws_eip" "nat" {
 
   vpc = true
 
-  tags = merge(var.metadata, {
+  tags = merge(var.common_tags, {
     "Name"   = format("%s-%d", var.name, count.index + 1)
     "Region" = var.region
   })
@@ -120,7 +120,7 @@ resource "aws_internet_gateway" "main" {
 
   vpc_id = aws_vpc.main.id
 
-  tags = merge(var.metadata, {
+  tags = merge(var.common_tags, {
     "Name"   = var.name
     "Region" = var.region
   })
@@ -140,7 +140,7 @@ resource "aws_nat_gateway" "main" {
   allocation_id = element(aws_eip.nat.*.id, count.index)
   subnet_id     = element(aws_subnet.public.*.id, count.index)
 
-  tags = merge(var.metadata, {
+  tags = merge(var.common_tags, {
     "Name"   = format("%s-%d", var.name, count.index + 1)
     "Region" = var.region
   })
@@ -172,7 +172,7 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.main.0.id
   }
 
-  tags = merge(var.metadata, {
+  tags = merge(var.common_tags, {
     "Name" = format("%s-public", var.name)
     "Region" = var.region
   })
@@ -203,7 +203,7 @@ resource "aws_route_table" "private" {
     nat_gateway_id = element(aws_nat_gateway.main.*.id, count.index)
   }
 
-  tags = merge(var.metadata, {
+  tags = merge(var.common_tags, {
     "Name" = format("%s-private-%d", var.name, count.index + 1)
     "Region" = var.region
   })
