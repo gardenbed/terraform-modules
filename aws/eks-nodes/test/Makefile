@@ -3,7 +3,7 @@ region := $(shell cat terraform.tfvars | grep region | grep -oe '".*"')
 
 ssh_path := ssh
 bastion_key := $(ssh_path)/$(name)-bastion
-node_group_key := $(ssh_path)/$(name)-node-group
+nodes_key := $(ssh_path)/$(name)-nodes
 
 
 .PHONY: keys
@@ -12,9 +12,9 @@ keys:
 	@ ssh-keygen -f $(bastion_key) -t rsa -N '' 1> /dev/null && \
 	  chmod 400 $(bastion_key) && \
 	  mv $(bastion_key) $(bastion_key).pem
-	@ ssh-keygen -f $(node_group_key) -t rsa -N '' 1> /dev/null && \
-	  chmod 400 $(node_group_key) && \
-	  mv $(node_group_key) $(node_group_key).pem
+	@ ssh-keygen -f $(nodes_key) -t rsa -N '' 1> /dev/null && \
+	  chmod 400 $(nodes_key) && \
+	  mv $(nodes_key) $(nodes_key).pem
 
 .PHONY: init
 init:
@@ -34,8 +34,8 @@ plan:
 	    -var ssh_path=$(ssh_path) \
 	    -var bastion_public_key=$(bastion_key).pub \
 	    -var bastion_private_key=$(bastion_key).pem \
-	    -var node_group_public_key=$(node_group_key).pub \
-	    -var node_group_private_key=$(node_group_key).pem
+	    -var nodes_public_key=$(nodes_key).pub \
+	    -var nodes_private_key=$(nodes_key).pem
 
 .PHONY: apply
 apply:
@@ -43,8 +43,8 @@ apply:
 	    -var ssh_path=$(ssh_path) \
 	    -var bastion_public_key=$(bastion_key).pub \
 	    -var bastion_private_key=$(bastion_key).pem \
-	    -var node_group_public_key=$(node_group_key).pub \
-	    -var node_group_private_key=$(node_group_key).pem
+	    -var nodes_public_key=$(nodes_key).pub \
+	    -var nodes_private_key=$(nodes_key).pem
 
 .PHONY: destroy
 destroy:
@@ -52,8 +52,8 @@ destroy:
 	    -var ssh_path=$(ssh_path) \
 	    -var bastion_public_key=$(bastion_key).pub \
 	    -var bastion_private_key=$(bastion_key).pem \
-	    -var node_group_public_key=$(node_group_key).pub \
-	    -var node_group_private_key=$(node_group_key).pem
+	    -var nodes_public_key=$(nodes_key).pub \
+	    -var nodes_private_key=$(nodes_key).pem
 
 .PHONY: clean
 clean:

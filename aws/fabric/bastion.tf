@@ -238,14 +238,15 @@ resource "aws_autoscaling_group" "bastion" {
   max_size             = 1
   vpc_zone_identifier  = slice(aws_subnet.public.*.id, 0, local.az_len)
 
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#launch_template-1
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#launch_template
   launch_template {
     id      = aws_launch_template.bastion.0.id
     version = aws_launch_template.bastion.0.latest_version
   }
 
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#tag-and-tags
   tags = [
-    for k, v in merge(var.common_tags, { "Name" = "${var.name}-bastion" }): {
+    for k, v in merge(var.common_tags, { Name = "${var.name}-bastion" }): {
       key                 = k
       value               = v
       propagate_at_launch = true
@@ -253,6 +254,7 @@ resource "aws_autoscaling_group" "bastion" {
   ]
 
   lifecycle {
+    create_before_destroy = true
     ignore_changes = [
       tags,
     ]

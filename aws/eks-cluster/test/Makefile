@@ -24,5 +24,5 @@ destroy:
 
 .PHONY: clean
 clean:
-	@ rm -f kubeconfig_* && \
+	@ rm -f kubeconfig-* && \
 	  rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup

@@ -80,12 +80,6 @@ variable "cluster_egress_cidrs" {
 
 # ==================================================< NODES >==================================================
 
-variable "node_groups" {
-  description = "A list of managed nodes for the cluster."
-  type = list(object({}))
-  default = []
-}
-
 variable "nodes" {
   description = "A list of self-managed nodes for the cluster."
   type = list(object({

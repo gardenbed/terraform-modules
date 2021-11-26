@@ -85,6 +85,19 @@ resource "aws_security_group_rule" "cluster_ingress_https_nodes" {
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule
+resource "aws_security_group_rule" "cluster_ingress_all_nodes" {
+  count = length(var.nodes)
+
+  type                     = "ingress"
+  protocol                 = "all"
+  from_port                = 0
+  to_port                  = 65535
+  security_group_id        = aws_security_group.cluster.id
+  source_security_group_id = var.nodes[count.index].security_group
+  description              = "Allowing nodes and pods to communication with the cluster."
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule
 resource "aws_security_group_rule" "cluster_egress_all_internet" {
   type              = "egress"
   protocol          = "-1"
