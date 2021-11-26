@@ -11,5 +11,5 @@ module "fabric" {
   name               = var.name
   region             = var.region
   az_count           = 3
-  bastion_public_key = "${path.module}/${var.bastion_key_name}.pub"
+  bastion_public_key = var.bastion_public_key
 }

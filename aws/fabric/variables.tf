@@ -78,7 +78,7 @@ variable "bastion_cidr_whitelist" {
 }
 
 variable "bastion_public_key" {
-  description = "The path to the public key for bastion hosts."
+  description = "The path to the SSH public key for bastion hosts."
   type        = string
   default     = null
 }
