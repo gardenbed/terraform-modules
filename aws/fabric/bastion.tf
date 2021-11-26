@@ -14,7 +14,7 @@ resource "aws_key_pair" "bastion" {
   key_name   = "${var.name}-bastion"
   public_key = file(var.bastion_public_key)
 
-  tags = merge(var.metadata, {
+  tags = merge(var.common_tags, {
     "Name" = var.name
   })
 
@@ -36,7 +36,7 @@ resource "aws_iam_instance_profile" "bastion" {
   name = "${var.name}-bastion"
   role = aws_iam_role.bastion.0.name
 
-  tags = merge(var.metadata, {
+  tags = merge(var.common_tags, {
     "Name" = var.name
   })
 
@@ -65,7 +65,7 @@ resource "aws_iam_role" "bastion" {
     }]
   })
 
-  tags = merge(var.metadata, {
+  tags = merge(var.common_tags, {
     "Name" = format("%s-bastion", var.name)
   })
 
@@ -146,7 +146,7 @@ resource "aws_security_group" "bastion" {
     cidr_blocks = [ aws_vpc.main.cidr_block ]
   } */
 
-  tags = merge(var.metadata, {
+  tags = merge(var.common_tags, {
     "Name" = format("%s-bastion", var.name)
   })
 
@@ -206,13 +206,13 @@ resource "aws_launch_template" "bastion" {
   tag_specifications {
     resource_type = "instance"
 
-    tags = merge(var.metadata, {
+    tags = merge(var.common_tags, {
       "Name"   = format("%s-bastion", var.name)
       "Region" = var.region
     })
   }
 
-  tags = merge(var.metadata, {
+  tags = merge(var.common_tags, {
     "Name" = format("%s-bastion", var.name)
   })
 
@@ -238,14 +238,15 @@ resource "aws_autoscaling_group" "bastion" {
   max_size             = 1
   vpc_zone_identifier  = slice(aws_subnet.public.*.id, 0, local.az_len)
 
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#launch_template-1
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#launch_template
   launch_template {
     id      = aws_launch_template.bastion.0.id
     version = aws_launch_template.bastion.0.latest_version
   }
 
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#tag-and-tags
   tags = [
-    for k, v in merge(var.metadata, { "Name" = "${var.name}-bastion" }): {
+    for k, v in merge(var.common_tags, { Name = "${var.name}-bastion" }): {
       key                 = k
       value               = v
       propagate_at_launch = true
@@ -253,6 +254,7 @@ resource "aws_autoscaling_group" "bastion" {
   ]
 
   lifecycle {
+    create_before_destroy = true
     ignore_changes = [
       tags,
     ]
@@ -261,6 +263,8 @@ resource "aws_autoscaling_group" "bastion" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/instance
 data "aws_instance" "bastion" {
+  count = var.enable_bastion ? 1 : 0
+
   depends_on = [ aws_autoscaling_group.bastion ]
 
   filter {

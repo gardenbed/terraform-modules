@@ -13,7 +13,7 @@ resource "aws_iam_instance_profile" "vpc" {
   name = "${var.name}-vpc"
   role = aws_iam_role.vpc.0.name
 
-  tags = merge(var.metadata, {
+  tags = merge(var.common_tags, {
     "Name" = var.name
   })
 
@@ -42,7 +42,7 @@ resource "aws_iam_role" "vpc" {
     }]
   })
 
-  tags = merge(var.metadata, {
+  tags = merge(var.common_tags, {
     "Name" = format("%s-vpc", var.name)
   })
 
@@ -87,7 +87,7 @@ resource "aws_cloudwatch_log_group" "vpc" {
   name              = "${var.name}-vpc"
   retention_in_days = 60
 
-  tags = merge(var.metadata, {
+  tags = merge(var.common_tags, {
     "Name" = format("%s-vpc", var.name)
   })
 
@@ -108,7 +108,7 @@ resource "aws_flow_log" "vpc" {
   traffic_type         = "ALL"
   vpc_id               = aws_vpc.main.id
 
-  tags = merge(var.metadata, {
+  tags = merge(var.common_tags, {
     "Name" = format("%s-vpc", var.name)
   })
 

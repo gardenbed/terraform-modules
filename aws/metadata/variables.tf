@@ -2,26 +2,26 @@
 # https://www.terraform.io/docs/language/expressions/type-constraints.html
 
 variable "uuid" {
-  type        = string
   description = "A universally unique identifier for the deployment."
+  type        = string
 }
 
 variable "owner" {
-  type        = string
   description = "An identifiable name, username, email, or uuid that owns the deployment."
+  type        = string
 }
 
 variable "git_repo" {
-  type        = string
   description = "The git repository address for the deployment."
+  type        = string
 }
 
 variable "git_branch" {
-  type        = string
   description = "The git branch name for the deployment."
+  type        = string
 }
 
 variable "git_commit" {
-  type        = string
   description = "The git commit hash for the deployment."
+  type        = string
 }

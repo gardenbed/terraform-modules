@@ -1,0 +1,13 @@
+name: AWS Certificate
+on: [push]
+jobs:
+  terraform:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Validate
+        uses: gardenbed/actions/terraform@main
+        with:
+          path: ./aws/certificate/test
+          args: validate

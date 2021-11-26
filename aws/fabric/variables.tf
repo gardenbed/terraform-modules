@@ -2,26 +2,26 @@
 # https://www.terraform.io/docs/language/expressions/type-constraints.html
 
 variable "name" {
-  type        = string
   description = "A human-readable name for the deployment."
+  type        = string
 }
 
 variable "region" {
-  type        = string
   description = "The AWS region for the deployment."
+  type        = string
 }
 
 variable "az_count" {
-  type        = number
   description = "The total number of availability zones required."
-  default     = 99 # This is a hack to default to all availability zones
+  type        = number
+  default     = 99 # Default to all availability zones
 }
 
 # https://en.wikipedia.org/wiki/Classful_network
 # https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing
 variable "vpc_cidrs" {
-  type        = map(string)
   description = "VPC CIDR for each AWS region."
+  type = map(string)
   default = {
     af-south-1     = "10.10.0.0/16",
     ap-east-1      = "10.11.0.0/16",
@@ -48,60 +48,61 @@ variable "vpc_cidrs" {
 }
 
 variable "enable_vpc_logs" {
-  type        = bool
   description = "Whether or not to enable VPC flow logs."
+  type        = bool
   default     = false
 }
 
 variable "enable_public_subnets" {
-  type        = bool
   description = "Whether or not to deploy public subnets."
+  type        = bool
   default     = true
 }
 
 variable "enable_private_subnets" {
-  type        = bool
   description = "Whether or not to deploy private subnets."
+  type        = bool
   default     = true
 }
 
 variable "enable_bastion" {
-  type        = bool
   description = "Whether or not to deploy bastion hosts."
+  type        = bool
   default     = true
 }
 
 variable "bastion_cidr_whitelist" {
-  type        = set(string)
   description = "A set of trusted CIDR blocks for incoming traffic."
+  type        = set(string)
   default     = [ "0.0.0.0/0" ]
 }
 
 variable "bastion_public_key" {
+  description = "The path to the SSH public key for bastion hosts."
   type        = string
-  description = "The path to the public key for bastion hosts."
+  default     = null
 }
 
-variable "metadata" {
+variable "common_tags" {
+  description = "A map of common tags for the resources."
   type        = map(string)
-  description = "A map of common metadata for resource tags."
   default     = {}
 }
 
 variable "vpc_tags" {
-  type        = map(string)
   description = "A map of tags to be applied to VPC resource."
+  type        = map(string)
   default     = {}
 }
 
 variable "public_subnet_tags" {
-  type        = map(string)
   description = "A map of tags to be applied to public subnets."
+  type        = map(string)
   default     = {}
 }
 
 variable "private_subnet_tags" {
-  type        = map(string)
   description = "A map of tags to be applied to private subnets."
+  type        = map(string)
   default     = {}
 }

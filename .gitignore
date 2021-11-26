@@ -9,5 +9,7 @@
 .terraform.lock.hcl
 
 # Misc files
+ssh/
 *.pem
 *.pub
+kubeconfig-*
