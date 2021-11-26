@@ -1,4 +1,4 @@
-name: AWS
+name: AWS Certificate Module
 on: [push]
 jobs:
   terraform:
@@ -9,5 +9,5 @@ jobs:
       - name: Validate
         uses: gardenbed/actions/terraform@main
         with:
-          path: ./test/aws
+          path: ./aws/certificate/test
           args: validate
