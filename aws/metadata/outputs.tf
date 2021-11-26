@@ -1,8 +1,8 @@
 # https://www.terraform.io/docs/language/values/outputs.html
 # https://www.terraform.io/docs/language/expressions/type-constraints.html
 
-output "common" {
-  description = "A map of common metadata for resources in a deployment."
+output "common_tags" {
+  description = "A map of common tags for resources."
   value = {
     UUID = var.uuid
     Owner = var.owner
