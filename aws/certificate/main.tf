@@ -1,15 +1,3 @@
-# https://www.terraform.io/docs/language/settings/index.html
-terraform {
-  # Reusable modules should constrain only their minimum allowed versions of Terraform and providers.
-  required_version = ">= 1.0.0"
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 3.66.0"
-    }
-  }
-}
-
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone
 data "aws_route53_zone" "main" {
   name = "${var.domain}."
@@ -21,7 +9,7 @@ resource "aws_acm_certificate" "main" {
   validation_method         = "DNS"
   domain_name               = var.cert_domain
   subject_alternative_names = var.cert_alt_domains
-  tags                      = var.metadata
+  tags                      = var.common_tags
 
   lifecycle {
     create_before_destroy = true

@@ -2,21 +2,22 @@
 # https://www.terraform.io/docs/language/expressions/type-constraints.html
 
 variable "domain" {
-  type        = string
   description = "Your domain name."
+  type        = string
 }
 
 variable "cert_domain" {
-  type        = string
   description = "Main domain or subdomain for the certificate."
+  type        = string
 }
 
 variable "cert_alt_domains" {
-  type        = set(string)
   description = "Alternative domains or subdomains for the certificate."
+  type        = set(string)
 }
 
-variable "metadata" {
+variable "common_tags" {
+  description = "A map of common tags for the certificate."
   type        = map(string)
-  description = "Metadata for the certificate."
+  default     = {}
 }
