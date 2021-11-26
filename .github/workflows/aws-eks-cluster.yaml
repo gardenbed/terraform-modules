@@ -1,4 +1,4 @@
-name: AWS Fabric
+name: AWS EKS Cluster
 on: [push]
 jobs:
   terraform:
@@ -9,5 +9,5 @@ jobs:
       - name: Validate
         uses: gardenbed/actions/terraform@main
         with:
-          path: ./aws/fabric/test
+          path: ./aws/eks-cluster/test
           args: validate

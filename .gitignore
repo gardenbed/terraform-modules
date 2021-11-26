@@ -11,3 +11,4 @@
 # Misc files
 *.pem
 *.pub
+kubeconfig_*

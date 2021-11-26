@@ -1,4 +1,4 @@
-name: AWS Metadata Module
+name: AWS Metadata
 on: [push]
 jobs:
   terraform:
