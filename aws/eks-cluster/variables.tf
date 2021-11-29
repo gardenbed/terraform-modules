@@ -46,7 +46,7 @@ variable "logs_retention_days" {
   default     = 60
 }
 
-# ==================================================< NETWORKING >==================================================
+# ==================================================< NETWORK >==================================================
 
 variable "vpc_id" {
   description = "The VPC network ID for the cluster."
@@ -76,16 +76,6 @@ variable "cluster_egress_cidrs" {
   description = "A list of trusted CIDR blocks that are permitted for the cluster egress traffic."
   type        = set(string)
   default     = [ "0.0.0.0/0" ]
-}
-
-# ==================================================< NODES >==================================================
-
-variable "nodes" {
-  description = "A list of self-managed nodes for the cluster."
-  type = list(object({
-    security_group = string
-  }))
-  default = []
 }
 
 # ==================================================< TIMEOUTS >==================================================

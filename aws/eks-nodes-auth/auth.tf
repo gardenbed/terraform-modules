@@ -4,6 +4,7 @@
 
 # https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map
 # If the cluster has node groups, the `aws-auth` ConfigMap is already created.
+# Only one `aws-auth` ConfigMap should be created for all nodes.
 resource "kubernetes_config_map" "aws_auth" {
   metadata {  
     name      = "aws-auth"

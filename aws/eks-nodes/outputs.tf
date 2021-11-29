@@ -6,17 +6,12 @@ output "iam_role_arn" {
   value       = aws_iam_role.nodes.arn
 }
 
-output "min_size" {
-  description = "The minimum number of nodes in the auto scaling group."
-  value       = aws_autoscaling_group.nodes.min_size
+output "security_group_id" {
+  description = "The security group id for the nodes."
+  value       = aws_security_group.nodes.id
 }
 
-output "desired_capacity" {
-  description = "The desired number of nodes in the auto scaling group."
-  value       = aws_autoscaling_group.nodes.desired_capacity
-}
-
-output "max_size" {
-  description = "The maximum number of nodes in the auto scaling group."
-  value       = aws_autoscaling_group.nodes.max_size
+output "ssh_config_file" {
+  description = "The path to SSH config file for the bastion hosts and nodes."
+  value       = local_file.ssh_config.filename
 }
