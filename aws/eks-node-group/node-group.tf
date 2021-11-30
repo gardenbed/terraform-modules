@@ -9,7 +9,7 @@
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair
 resource "aws_key_pair" "node_group" {
   key_name   = "${var.name}-node-group"
-  public_key = file(var.ssh.public_key)
+  public_key = file(var.ssh.public_key_file)
 
   tags = merge(var.common_tags, {
     Name = format("%s-node-group", var.name)
@@ -87,7 +87,7 @@ resource "aws_eks_node_group" "node_group" {
   node_group_name = var.name
   cluster_name    = var.cluster_name
   node_role_arn   = aws_iam_role.node_group.arn
-  subnet_ids      = [ for subnet in var.subnets: subnet.id ]
+  subnet_ids      = var.subnets.*.id
 
   force_update_version = false
   capacity_type        = var.profile.capacity_type

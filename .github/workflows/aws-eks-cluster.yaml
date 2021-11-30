@@ -9,5 +9,5 @@ jobs:
       - name: Validate
         uses: gardenbed/actions/terraform@main
         with:
-          path: ./aws/eks-cluster/test
+          path: ./aws/eks-cluster/example
           args: validate

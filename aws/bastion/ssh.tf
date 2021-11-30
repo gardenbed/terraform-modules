@@ -4,21 +4,21 @@
 
 # https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file
 data "template_file" "ssh_config" {
+  count = length(var.ssh_path) > 0 ? 1 : 0
+
   template = file("${path.module}/sshconfig.tpl")
   vars = {
-    bastion_dns_name            = var.bastion.dns_name
-    bastion_private_key         = basename(var.bastion.private_key_file)
-    node_group_private_key      = basename(var.ssh.private_key_file)
-    node_group_subnets_wildcard = join(" ", [
-      for subnet in var.subnets: replace(subnet.cidr, "0/24", "*")
-    ])
+    dns_name    = aws_lb.bastion.dns_name
+    private_key = basename(var.private_key_file)
   }
 }
 
 # https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file
 resource "local_file" "ssh_config" {
-  filename             = pathexpand("${var.ssh.ssh_path}/config-${var.name}")
-  content              = data.template_file.ssh_config.rendered
+  count = length(var.ssh_path) > 0 ? 1 : 0
+
+  filename             = pathexpand("${var.ssh_path}/config-${var.name}")
+  content              = data.template_file.ssh_config.0.rendered
   file_permission      = "0644"
   directory_permission = "0700"
 }

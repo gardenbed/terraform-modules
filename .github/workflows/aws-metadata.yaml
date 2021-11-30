@@ -9,5 +9,5 @@ jobs:
       - name: Validate
         uses: gardenbed/actions/terraform@main
         with:
-          path: ./aws/metadata/test
+          path: ./aws/metadata/example
           args: validate

@@ -3,22 +3,13 @@
 #   These updates are based on semantic rules managed outside of the Terraform scope.
 
 # ====================================================================================================
-#  Cluster
-# ====================================================================================================
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/eks_cluster
-data "aws_eks_cluster" "cluster" {
-  name = var.cluster_name
-}
-
-# ====================================================================================================
 #  Keys
 # ====================================================================================================
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair
 resource "aws_key_pair" "nodes" {
   key_name   = "${var.name}-nodes"
-  public_key = file(var.ssh.public_key)
+  public_key = file(var.ssh.public_key_file)
 
   tags = merge(var.common_tags, {
     Name = format("%s-nodes", var.name)
@@ -103,11 +94,10 @@ resource "aws_iam_role_policy_attachment" "nodes_AmazonEC2ContainerRegistryReadO
 # https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html
 resource "aws_security_group" "nodes" {
   name   = "${var.name}-nodes"
-  vpc_id = var.vpc_id
+  vpc_id = local.cluster_vpc_id
 
   tags = merge(var.common_tags, {
     Name = format("%s-nodes", var.name)
-
     "kubernetes.io/cluster/${var.cluster_name}" = "owned"
   })
 
@@ -122,12 +112,12 @@ resource "aws_security_group" "nodes" {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule
 resource "aws_security_group_rule" "nodes_ingress_all_self" {
   type                     = "ingress"
-  protocol                 = "-1"
+  protocol                 = "all"
   from_port                = 0
   to_port                  = 0
   security_group_id        = aws_security_group.nodes.id
   source_security_group_id = aws_security_group.nodes.id
-  description              = "Allowing nodes to communicate with each other."
+  description              = "Allow nodes to communicate with each other."
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule
@@ -138,7 +128,18 @@ resource "aws_security_group_rule" "nodes_ingress_ssh_bastion" {
   to_port                  = 22
   security_group_id        = aws_security_group.nodes.id
   source_security_group_id = var.bastion.security_group_id
-  description              = "Allowing SSH access from bastion hosts."
+  description              = "Allow SSH access from bastion hosts."
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule
+resource "aws_security_group_rule" "cluster_ingress_https_nodes" {
+  type                     = "ingress"
+  protocol                 = "tcp"
+  from_port                = 443
+  to_port                  = 443
+  security_group_id        = var.cluster_additional_security_group_id
+  source_security_group_id = aws_security_group.nodes.id
+  description              = "Allow nodes and pods to communicate with the cluster public API server."
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule
@@ -148,8 +149,19 @@ resource "aws_security_group_rule" "nodes_ingress_https_cluster" {
   from_port                = 443
   to_port                  = 443
   security_group_id        = aws_security_group.nodes.id
-  source_security_group_id = data.aws_eks_cluster.cluster.vpc_config.0.cluster_security_group_id
-  description              = "Allowing pods running extension API servers to receive communication from the cluster."
+  source_security_group_id = var.cluster_additional_security_group_id
+  description              = "Allow pods running extension API servers to receive communication from the cluster."
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule
+resource "aws_security_group_rule" "cluster_ingress_all_nodes" {
+  type                     = "ingress"
+  protocol                 = "all"
+  from_port                = 0
+  to_port                  = 0
+  security_group_id        = var.cluster_additional_security_group_id
+  source_security_group_id = aws_security_group.nodes.id
+  description              = "Allow nodes and pods to communication with the cluster."
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule
@@ -157,21 +169,21 @@ resource "aws_security_group_rule" "nodes_ingress_all_cluster" {
   type                     = "ingress"
   protocol                 = "all"
   from_port                = 0
-  to_port                  = 65535
+  to_port                  = 0
   security_group_id        = aws_security_group.nodes.id
-  source_security_group_id = data.aws_eks_cluster.cluster.vpc_config.0.cluster_security_group_id
-  description              =  "Allowing nodes and pods to receive communication from the cluster."
+  source_security_group_id = var.cluster_additional_security_group_id
+  description              =  "Allow nodes and pods to receive communication from the cluster."
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule
 resource "aws_security_group_rule" "nodes_egress_all_internet" {
   type              = "egress"
-  protocol          = "-1"
+  protocol          = "all"
   from_port         = 0
   to_port           = 0
   security_group_id = aws_security_group.nodes.id
-  cidr_blocks       = var.cluster_egress_cidrs
-  description       = "Allowing nodes outbound access to the Internet."
+  cidr_blocks       = var.nodes_egress_cidrs
+  description       = "Allow nodes outbound access to the Internet."
 }
 
 # ====================================================================================================
@@ -185,7 +197,7 @@ data "aws_ami" "nodes" {
 
   filter {
     name   = "name"
-    values = [ "amazon-eks-node-${data.aws_eks_cluster.cluster.version}-v*" ]
+    values = [ "amazon-eks-node-${local.cluster_version}-v*" ]
   }
 }
 
@@ -194,8 +206,8 @@ data "template_file" "node_init" {
   template = file("${path.module}/node-init.tpl")
   vars = {
     cluster_name          = var.cluster_name
-    cluster_endpoint      = data.aws_eks_cluster.cluster.endpoint
-    certificate_authority = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
+    cluster_endpoint      = local.cluster_endpoint
+    certificate_authority = local.cluster_certificate_authority
   }
 }
 
@@ -273,7 +285,7 @@ resource "aws_autoscaling_group" "nodes" {
   desired_capacity     = var.profile.desired_capacity
   max_size             = var.profile.max_size
   force_delete         = false
-  vpc_zone_identifier  = [ for subnet in var.subnets: subnet.id ]
+  vpc_zone_identifier  = local.cluster_subnet_ids
 
   # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#launch_template
   launch_template {

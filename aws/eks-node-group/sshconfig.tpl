@@ -1,14 +1,14 @@
-  Host bastion
-    HostName ${bastion_public_ip}
-    User admin
-    IdentityFile ${bastion_private_key}
-    StrictHostKeyChecking no
-    UserKnownHostsFile /dev/null
-    LogLevel error
-  Host ${node_group_subnets_wildcard}
-    User ec2-user
-    IdentityFile ${node_group_private_key}
-    ProxyJump bastion
-    StrictHostKeyChecking no
-    UserKnownHostsFile /dev/null
-    LogLevel error
+Host bastion
+  HostName ${bastion_dns_name}
+  User admin
+  IdentityFile ${bastion_private_key}
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+  LogLevel error
+Host ${node_group_subnets_wildcard}
+  User ec2-user
+  IdentityFile ${node_group_private_key}
+  ProxyJump bastion
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+  LogLevel error

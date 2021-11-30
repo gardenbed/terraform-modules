@@ -1,4 +1,4 @@
-name: AWS Certificate
+name: AWS Bastion
 on: [push]
 jobs:
   terraform:
@@ -9,5 +9,5 @@ jobs:
       - name: Validate
         uses: gardenbed/actions/terraform@main
         with:
-          path: ./aws/certificate/example
+          path: ./aws/bastion/example
           args: validate

@@ -9,11 +9,11 @@ variable "name" {
 # ==================================================< NODE GROUP >==================================================
 
 variable "cluster_name" {
-  description = "The cluster name for the node group."
+  description = "The name of the cluster for the node group."
   type        = string
 }
 
-# ==================================================< NETWORKING >==================================================
+# ==================================================< NETWORK >==================================================
 
 variable "subnets" {
   description = "The list of private subnet objects for placing the node group within."
@@ -30,17 +30,17 @@ variable "bastion" {
   description = "An object containing information about the bastion hosts."
   type = object({
     security_group_id = string
-    public_ip         = string
-    private_key       = string
+    dns_name          = string
+    private_key_file  = string
   })
 }
 
 variable "ssh" {
   description = "An object containing information for ssh access to the node group."
   type = object({
-    ssh_path    = string
-    public_key  = string
-    private_key = string
+    ssh_path         = string
+    private_key_file = string
+    public_key_file  = string
   })
 }
 

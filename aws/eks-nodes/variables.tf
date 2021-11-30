@@ -9,27 +9,23 @@ variable "name" {
 # ==================================================< NODE GROUP >==================================================
 
 variable "cluster_name" {
-  description = "The cluster name for the nodes."
+  description = "The name of the cluster for the nodes."
   type        = string
 }
 
-# ==================================================< NETWORKING >==================================================
-
-variable "vpc_id" {
-  description = "The VPC network ID for the nodes."
+variable "cluster_additional_security_group_id" {
+  description = "The additional security group ID of the cluster for the nodes."
   type        = string
 }
 
-variable "subnets" {
-  description = "The list of private subnet objects for placing the nodes within."
-  type = list(object({
-    id                = string
-    cidr              = string
-    availability_zone = string
-  }))
+# ==================================================< NETWORK >==================================================
+
+variable "subnet_cidrs" {
+  description = "The list of private subnet CIDR blocks."
+  type        = list(string)
 }
 
-variable "cluster_egress_cidrs" {
+variable "nodes_egress_cidrs" {
   description = "A list of trusted CIDR blocks that are permitted for the nodes egress traffic."
   type        = set(string)
   default     = [ "0.0.0.0/0" ]
@@ -41,17 +37,17 @@ variable "bastion" {
   description = "An object containing information about the bastion hosts."
   type = object({
     security_group_id = string
-    public_ip         = string
-    private_key       = string
+    dns_name          = string
+    private_key_file  = string
   })
 }
 
 variable "ssh" {
   description = "An object containing information for ssh access to the nodes."
   type = object({
-    ssh_path    = string
-    public_key  = string
-    private_key = string
+    ssh_path         = string
+    private_key_file = string
+    public_key_file  = string
   })
 }
 

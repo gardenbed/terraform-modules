@@ -35,3 +35,15 @@ output "oidc_url" {
   description = "The OpenID Connect provider URL."
   value       = aws_eks_cluster.cluster.identity[0].oidc[0].issuer
 }
+
+output "additional_security_group_ids" {
+  description = "Additional security group IDs for the cluster."
+  value = [
+    aws_security_group.cluster.id
+  ]
+}
+
+output "kubeconfig_file" {
+  description = "The path to kubectl config file for the cluster."
+  value       = local_file.kubeconfig.filename
+}

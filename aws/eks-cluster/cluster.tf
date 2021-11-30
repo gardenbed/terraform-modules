@@ -56,6 +56,7 @@ resource "aws_iam_role_policy_attachment" "cluster_AmazonEKSVPCResourceControlle
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
 # https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html
+# Additional security group for the cluster to communicate with self-managed nodes and the Internet.
 resource "aws_security_group" "cluster" {
   name   = "${var.name}-cluster"
   vpc_id = var.vpc_id
@@ -72,40 +73,14 @@ resource "aws_security_group" "cluster" {
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule
-resource "aws_security_group_rule" "cluster_ingress_https_nodes" {
-  count = length(var.nodes)
-
-  type                     = "ingress"
-  protocol                 = "tcp"
-  from_port                = 443
-  to_port                  = 443
-  security_group_id        = aws_security_group.cluster.id
-  source_security_group_id = var.nodes[count.index].security_group
-  description              = "Allowing nodes and pods to communicate with the cluster public API server."
-}
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule
-resource "aws_security_group_rule" "cluster_ingress_all_nodes" {
-  count = length(var.nodes)
-
-  type                     = "ingress"
-  protocol                 = "all"
-  from_port                = 0
-  to_port                  = 65535
-  security_group_id        = aws_security_group.cluster.id
-  source_security_group_id = var.nodes[count.index].security_group
-  description              = "Allowing nodes and pods to communication with the cluster."
-}
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule
 resource "aws_security_group_rule" "cluster_egress_all_internet" {
   type              = "egress"
-  protocol          = "-1"
+  protocol          = "all"
   from_port         = 0
   to_port           = 0
   security_group_id = aws_security_group.cluster.id
   cidr_blocks       = var.cluster_egress_cidrs
-  description       = "Allowing cluster outbound access to the Internet."
+  description       = "Allow cluster outbound access to the Internet."
 }
 
 # ====================================================================================================
@@ -139,7 +114,6 @@ resource "aws_eks_cluster" "cluster" {
     aws_iam_role_policy_attachment.cluster_AmazonEKSClusterPolicy,
     aws_iam_role_policy_attachment.cluster_AmazonEKSServicePolicy,
     aws_iam_role_policy_attachment.cluster_AmazonEKSVPCResourceController,
-    aws_security_group_rule.cluster_ingress_https_nodes,
     aws_security_group_rule.cluster_egress_all_internet,
     aws_cloudwatch_log_group.cluster,
   ]
