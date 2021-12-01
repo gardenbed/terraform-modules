@@ -2,7 +2,7 @@
 # https://www.terraform.io/docs/language/expressions/version-constraints.html
 
 terraform {
-  # Reusable modules should constrain only their minimum allowed versions of Terraform and providers.
+  # Root modules should constraint both a lower and upper bound on versions of Terraform and providers.
   required_version = "~> 1.0"
   required_providers {
     aws = {

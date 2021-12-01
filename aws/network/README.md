@@ -1,9 +1,7 @@
 # network
 
 This module deploys the networking infrastructure for a highly available cluster and/or a distributed system.
-
 This module creates `public` and `private` subnets per availability zone.
-Instances launched in `private` subnets cannot be accessed from the Internet.
 
 ## Examples
 

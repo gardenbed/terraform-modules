@@ -1,0 +1,15 @@
+name: Google Network
+on: [push]
+jobs:
+  terraform:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup
+        run: touch ./google/account.json
+      - name: Validate
+        uses: gardenbed/actions/terraform@main
+        with:
+          path: ./google/network/example
+          args: validate

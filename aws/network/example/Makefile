@@ -12,18 +12,19 @@ validate:
 
 .PHONY: plan
 plan:
-	@ terraform plan \
-	    -var bastion_public_key_file=$(key_name).pub
+	@ terraform plan
 
 .PHONY: apply
 apply:
-	@ terraform apply \
-	    -var bastion_public_key_file=$(key_name).pub
+	@ terraform apply
+
+.PHONY: refresh
+refresh:
+	@ terraform refresh
 
 .PHONY: destroy
 destroy:
-	@ terraform destroy \
-	    -var bastion_public_key_file=$(key_name).pub
+	@ terraform destroy
 
 .PHONY: clean
 clean:

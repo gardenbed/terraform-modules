@@ -72,7 +72,7 @@ variable "enable_private_subnets" {
 # ==================================================< TAGS >==================================================
 
 variable "common_tags" {
-  description = "A map of common tags for the resources."
+  description = "A map of common tags for the deployment resources."
   type        = map(string)
   default     = {}
 }

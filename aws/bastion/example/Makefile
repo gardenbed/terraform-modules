@@ -1,6 +1,7 @@
 ssh_path := ssh
 key_name := $(ssh_path)/bastion
 
+
 .PHONY: keys
 keys:
 	@ mkdir -p $(ssh_path)
@@ -30,6 +31,13 @@ plan:
 .PHONY: apply
 apply:
 	@ terraform apply \
+	    -var ssh_path=$(ssh_path) \
+	    -var private_key_file=$(key_name).pem \
+	    -var public_key_file=$(key_name).pub
+
+.PHONY: refresh
+refresh:
+	@ terraform refresh \
 	    -var ssh_path=$(ssh_path) \
 	    -var private_key_file=$(key_name).pem \
 	    -var public_key_file=$(key_name).pub

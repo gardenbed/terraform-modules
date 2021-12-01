@@ -18,6 +18,10 @@ plan:
 apply:
 	@ terraform apply
 
+.PHONY: refresh
+refresh:
+	@ terraform refresh
+
 .PHONY: destroy
 destroy:
 	@ terraform destroy

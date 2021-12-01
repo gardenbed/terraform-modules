@@ -1,3 +1,7 @@
+.EXPORT_ALL_VARIABLES:
+	GOOGLE_APPLICATION_CREDENTIALS=../../account.json
+
+
 .PHONY: init
 init:
 	@ terraform init
@@ -28,5 +32,4 @@ destroy:
 
 .PHONY: clean
 clean:
-	@ rm -f kubeconfig-* && \
-	  rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
+	@ rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
