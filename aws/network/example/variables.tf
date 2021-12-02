@@ -15,7 +15,3 @@ variable "region" {
 variable "name" {
   type = string
 }
-
-variable "bastion_public_key_file" {
-  type = string
-}

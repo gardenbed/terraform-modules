@@ -32,6 +32,14 @@ apply:
 	    -var git_branch=$(branch) \
 	    -var git_commit=$(commit)
 
+.PHONY: refresh
+refresh:
+	@ terraform refresh \
+	    -var uuid=$(uuid) \
+	    -var owner=$(owner) \
+	    -var git_branch=$(branch) \
+	    -var git_commit=$(commit)
+
 .PHONY: destroy
 destroy:
 	@ terraform destroy \

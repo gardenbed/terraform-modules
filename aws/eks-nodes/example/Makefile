@@ -43,6 +43,15 @@ apply:
 	    -var nodes_private_key_file=$(nodes_key).pem \
 	    -var nodes_public_key_file=$(nodes_key).pub
 
+.PHONY: refresh
+refresh:
+	@ terraform refresh \
+	    -var ssh_path=$(ssh_path) \
+	    -var bastion_private_key_file=$(bastion_key).pem \
+	    -var bastion_public_key_file=$(bastion_key).pub \
+	    -var nodes_private_key_file=$(nodes_key).pem \
+	    -var nodes_public_key_file=$(nodes_key).pub
+
 .PHONY: destroy
 destroy:
 	@ terraform destroy \
