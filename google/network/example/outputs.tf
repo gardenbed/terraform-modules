@@ -1,11 +1,11 @@
-output "network_id" {
-  value = module.network.network_id
+output "network" {
+  value = module.network.network
 }
 
-output "public_subnetwork_id" {
-  value = module.network.public_subnetwork_id
+output "public_subnetwork" {
+  value = module.network.public_subnetwork
 }
 
-output "private_subnetwork_id" {
-  value = module.network.private_subnetwork_id
+output "private_subnetwork" {
+  value = module.network.private_subnetwork
 }

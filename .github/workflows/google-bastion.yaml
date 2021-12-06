@@ -1,4 +1,4 @@
-name: AWS Metadata
+name: Google Bastion
 on: [push]
 jobs:
   terraform:
@@ -6,8 +6,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Setup
+        run: touch ./google/account.json
       - name: Validate
         uses: gardenbed/actions/terraform@main
         with:
-          path: ./aws/metadata/example
+          path: ./google/bastion/example
           args: validate

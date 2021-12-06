@@ -3,6 +3,49 @@
 #   These updates are based on semantic rules managed outside of the Terraform scope.
 
 # ====================================================================================================
+#  CLOUDWATCH
+# ====================================================================================================
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/flow_log
+resource "aws_flow_log" "vpc" {
+  count = var.enable_vpc_logs ? 1 : 0
+
+  iam_role_arn         = aws_iam_role.vpc.0.arn
+  log_destination      = aws_cloudwatch_log_group.vpc.0.arn
+  log_destination_type = "cloud-watch-logs"
+  traffic_type         = "ALL"
+  vpc_id               = aws_vpc.main.id
+
+  tags = merge(var.common_tags, {
+    Name = format("%s-vpc", var.name)
+  })
+
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group
+resource "aws_cloudwatch_log_group" "vpc" {
+  count = var.enable_vpc_logs ? 1 : 0
+
+  name              = "${var.name}-vpc"
+  retention_in_days = 60
+
+  tags = merge(var.common_tags, {
+    Name = format("%s-vpc", var.name)
+  })
+
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
+}
+
+# ====================================================================================================
 #  IAM
 # ====================================================================================================
 
@@ -14,7 +57,7 @@ resource "aws_iam_instance_profile" "vpc" {
   role = aws_iam_role.vpc.0.name
 
   tags = merge(var.common_tags, {
-    "Name" = var.name
+    Name = var.name
   })
 
   lifecycle {
@@ -43,7 +86,7 @@ resource "aws_iam_role" "vpc" {
   })
 
   tags = merge(var.common_tags, {
-    "Name" = format("%s-vpc", var.name)
+    Name = format("%s-vpc", var.name)
   })
 
   lifecycle {
@@ -74,47 +117,4 @@ resource "aws_iam_role_policy" "vpc" {
       ]
     }]
   })
-}
-
-# ====================================================================================================
-#  CloudWatch
-# ====================================================================================================
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group
-resource "aws_cloudwatch_log_group" "vpc" {
-  count = var.enable_vpc_logs ? 1 : 0
-
-  name              = "${var.name}-vpc"
-  retention_in_days = 60
-
-  tags = merge(var.common_tags, {
-    "Name" = format("%s-vpc", var.name)
-  })
-
-  lifecycle {
-    ignore_changes = [
-      tags,
-    ]
-  }
-}
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/flow_log
-resource "aws_flow_log" "vpc" {
-  count = var.enable_vpc_logs ? 1 : 0
-
-  iam_role_arn         = aws_iam_role.vpc.0.arn
-  log_destination      = aws_cloudwatch_log_group.vpc.0.arn
-  log_destination_type = "cloud-watch-logs"
-  traffic_type         = "ALL"
-  vpc_id               = aws_vpc.main.id
-
-  tags = merge(var.common_tags, {
-    "Name" = format("%s-vpc", var.name)
-  })
-
-  lifecycle {
-    ignore_changes = [
-      tags,
-    ]
-  }
 }

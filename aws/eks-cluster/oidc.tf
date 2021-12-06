@@ -8,11 +8,6 @@
 #  OIDC
 # ====================================================================================================
 
-# https://registry.terraform.io/providers/hashicorp/tls/latest/docs/data-sources/tls_certificate
-data "tls_certificate" "cluster" {
-  url = aws_eks_cluster.cluster.identity[0].oidc[0].issuer
-}
-
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_openid_connect_provider
 resource "aws_iam_openid_connect_provider" "cluster" {
   count = var.enable_iam_role_service_account ? 1 : 0
@@ -22,7 +17,7 @@ resource "aws_iam_openid_connect_provider" "cluster" {
   thumbprint_list = [ data.tls_certificate.cluster.certificates[0].sha1_fingerprint]
 
   tags = merge(var.common_tags, {
-    "Name" = format("%s-cluster-oidc", var.name)
+    Name = format("%s-cluster-oidc", var.name)
   })
 
   lifecycle {
@@ -32,9 +27,22 @@ resource "aws_iam_openid_connect_provider" "cluster" {
   }
 }
 
+# https://registry.terraform.io/providers/hashicorp/tls/latest/docs/data-sources/tls_certificate
+data "tls_certificate" "cluster" {
+  url = aws_eks_cluster.cluster.identity[0].oidc[0].issuer
+}
+
 # ====================================================================================================
 #  IAM
 # ====================================================================================================
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role
+resource "aws_iam_role" "cluster_service_account" {
+  count = var.enable_iam_role_service_account ? 1 : 0
+
+  name               = "${var.name}-cluster-service-account"
+  assume_role_policy = data.aws_iam_policy_document.cluster_service_account.0.json
+}
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document
 data "aws_iam_policy_document" "cluster_service_account" {
@@ -55,11 +63,4 @@ data "aws_iam_policy_document" "cluster_service_account" {
       type        = "Federated"
     }
   }
-}
-
-resource "aws_iam_role" "cluster_service_account" {
-  count = var.enable_iam_role_service_account ? 1 : 0
-
-  name               = "${var.name}-cluster-service-account"
-  assume_role_policy = data.aws_iam_policy_document.cluster_service_account.0.json
 }

@@ -3,75 +3,7 @@
 #   These updates are based on semantic rules managed outside of the Terraform scope.
 
 # ====================================================================================================
-#  Keys
-# ====================================================================================================
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair
-resource "aws_key_pair" "node_group" {
-  key_name   = "${var.name}-node-group"
-  public_key = file(var.ssh.public_key_file)
-
-  tags = merge(var.common_tags, {
-    Name = format("%s-node-group", var.name)
-  })
-
-  lifecycle {
-    ignore_changes = [
-      tags,
-    ]
-  }
-}
-
-# ====================================================================================================
-#  IAM
-# ====================================================================================================
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role
-resource "aws_iam_role" "node_group" {
-  name = "${var.name}-node-group"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Principal = {
-        Service = "ec2.amazonaws.com"
-      }
-    }]
-  })
-
-  tags = merge(var.common_tags, {
-    Name = format("%s-node-group", var.name)
-  })
-
-  lifecycle {
-    ignore_changes = [
-      tags,
-    ]
-  }
-}
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment
-resource "aws_iam_role_policy_attachment" "node_group_AmazonEKSWorkerNodePolicy" {
-  role       = aws_iam_role.node_group.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-}
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment
-resource "aws_iam_role_policy_attachment" "node_group_AmazonEKS_CNI_Policy" {
-  role       = aws_iam_role.node_group.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-}
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment
-resource "aws_iam_role_policy_attachment" "node_group_AmazonEC2ContainerRegistryReadOnly" {
-  role       = aws_iam_role.node_group.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-}
-
-# ====================================================================================================
-#  Node Groups
+#  NODE GROUPS
 # ====================================================================================================
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_node_group
@@ -144,4 +76,68 @@ resource "aws_eks_node_group" "node_group" {
       tags,
     ]
   }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair
+resource "aws_key_pair" "node_group" {
+  key_name   = "${var.name}-node-group"
+  public_key = file(var.ssh.public_key_file)
+
+  tags = merge(var.common_tags, {
+    Name = format("%s-node-group", var.name)
+  })
+
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
+}
+
+# ====================================================================================================
+#  IAM
+# ====================================================================================================
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role
+resource "aws_iam_role" "node_group" {
+  name = "${var.name}-node-group"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      }
+    }]
+  })
+
+  tags = merge(var.common_tags, {
+    Name = format("%s-node-group", var.name)
+  })
+
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment
+resource "aws_iam_role_policy_attachment" "node_group_AmazonEKSWorkerNodePolicy" {
+  role       = aws_iam_role.node_group.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment
+resource "aws_iam_role_policy_attachment" "node_group_AmazonEKS_CNI_Policy" {
+  role       = aws_iam_role.node_group.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment
+resource "aws_iam_role_policy_attachment" "node_group_AmazonEC2ContainerRegistryReadOnly" {
+  role       = aws_iam_role.node_group.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
