@@ -13,8 +13,8 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = false
 
   tags = merge(var.common_tags, var.vpc_tags, {
-    "Name"   = var.name
-    "Region" = var.region
+    Name   = var.name
+    Region = var.region
   })
 
   lifecycle {
@@ -25,7 +25,7 @@ resource "aws_vpc" "main" {
 }
 
 # ====================================================================================================
-#  Subnets
+#  SUBNETS
 # ====================================================================================================
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet
@@ -37,8 +37,8 @@ resource "aws_subnet" "public" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = merge(var.common_tags, var.public_subnet_tags, {
-    "Name"   = format("%s-public-%d", var.name, count.index + 1)
-    "Region" = var.region
+    Name   = format("%s-public-%d", var.name, count.index + 1)
+    Region = var.region
   })
 
   lifecycle {
@@ -57,8 +57,8 @@ resource "aws_subnet" "private" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = merge(var.common_tags, var.private_subnet_tags, {
-    "Name"   = format("%s-private-%d", var.name, count.index + 1)
-    "Region" = var.region
+    Name   = format("%s-private-%d", var.name, count.index + 1)
+    Region = var.region
   })
 
   lifecycle {
@@ -69,30 +69,7 @@ resource "aws_subnet" "private" {
 }
 
 # ====================================================================================================
-#  Elastic IPs
-# ====================================================================================================
-
-# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip
-resource "aws_eip" "nat" {
-  count = var.enable_private_subnets ? local.az_len : 0
-
-  vpc = true
-
-  tags = merge(var.common_tags, {
-    "Name"   = format("%s-%d", var.name, count.index + 1)
-    "Region" = var.region
-  })
-
-  lifecycle {
-    ignore_changes = [
-      tags,
-    ]
-  }
-}
-
-# ====================================================================================================
-#  Gateways
+#  GATEWAYS
 # ====================================================================================================
 
 # https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Internet_Gateway.html
@@ -103,8 +80,8 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = merge(var.common_tags, {
-    "Name"   = var.name
-    "Region" = var.region
+    Name   = var.name
+    Region = var.region
   })
 
   lifecycle {
@@ -123,8 +100,27 @@ resource "aws_nat_gateway" "main" {
   subnet_id     = element(aws_subnet.public.*.id, count.index)
 
   tags = merge(var.common_tags, {
-    "Name"   = format("%s-%d", var.name, count.index + 1)
-    "Region" = var.region
+    Name   = format("%s-%d", var.name, count.index + 1)
+    Region = var.region
+  })
+
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
+}
+
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip
+resource "aws_eip" "nat" {
+  count = var.enable_private_subnets ? local.az_len : 0
+
+  vpc = true
+
+  tags = merge(var.common_tags, {
+    Name   = format("%s-%d", var.name, count.index + 1)
+    Region = var.region
   })
 
   lifecycle {
@@ -135,10 +131,12 @@ resource "aws_nat_gateway" "main" {
 }
 
 # ====================================================================================================
-#  Route Tables
+#  ROUTE TABLES
 # ====================================================================================================
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table_association
+
 resource "aws_route_table" "public" {
   count = var.enable_public_subnets ? 1 : 0
 
@@ -155,8 +153,8 @@ resource "aws_route_table" "public" {
   }
 
   tags = merge(var.common_tags, {
-    "Name" = format("%s-public", var.name)
-    "Region" = var.region
+    Name   = format("%s-public", var.name)
+    Region = var.region
   })
 
   lifecycle {
@@ -166,7 +164,6 @@ resource "aws_route_table" "public" {
   }
 }
 
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table_association
 resource "aws_route_table_association" "public" {
   count = var.enable_public_subnets ? local.az_len : 0
 
@@ -174,7 +171,6 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.0.id
 }
 
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table
 resource "aws_route_table" "private" {
   count = var.enable_private_subnets ? local.az_len : 0
 
@@ -186,8 +182,8 @@ resource "aws_route_table" "private" {
   }
 
   tags = merge(var.common_tags, {
-    "Name" = format("%s-private-%d", var.name, count.index + 1)
-    "Region" = var.region
+    Name   = format("%s-private-%d", var.name, count.index + 1)
+    Region = var.region
   })
 
   lifecycle {
@@ -197,7 +193,6 @@ resource "aws_route_table" "private" {
   }
 }
 
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table_association
 resource "aws_route_table_association" "private" {
   count = var.enable_private_subnets ? local.az_len : 0
 

@@ -3,7 +3,7 @@
 This module deploys the networking infrastructure for a highly available cluster and/or a distributed system.
 This module creates `public` and `private` subnets per availability zone.
 
-## Examples
+## Usage
 
 ```hcl
 module "network" {

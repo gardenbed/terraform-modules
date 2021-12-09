@@ -1,4 +1,4 @@
-module "metadata" {
+module "tags" {
   source = "../"
 
   uuid       = var.uuid

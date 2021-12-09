@@ -1,23 +1,10 @@
-# https://www.terraform.io/docs/language/meta-arguments/lifecycle.html#create_before_destroy
 # https://www.terraform.io/docs/language/meta-arguments/lifecycle.html#ignore_changes
 #   We ignore changes to tags since they can take new values on each run (terraform plan/apply).
 #   These updates are based on semantic rules managed outside of the Terraform scope.
 
 # ====================================================================================================
-#  DATA
+#  S3
 # ====================================================================================================
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity
-data "aws_caller_identity" "current" {}
-
-# ====================================================================================================
-#  S3 BUCKET
-# ====================================================================================================
-
-# https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id
-resource "random_id" "bastion_bucket" {
-  byte_length = 8
-}
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket
 resource "aws_s3_bucket" "bastion" {
@@ -32,7 +19,7 @@ resource "aws_s3_bucket" "bastion" {
   }
 
   tags = merge(var.common_tags, {
-    "Name" = format("%s-bastion", var.name)
+    Name = format("%s-bastion", var.name)
   })
 
   lifecycle {
@@ -40,6 +27,11 @@ resource "aws_s3_bucket" "bastion" {
       tags,
     ]
   }
+}
+
+# https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id
+resource "random_id" "bastion_bucket" {
+  byte_length = 8
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block
@@ -93,3 +85,10 @@ resource "aws_s3_bucket_policy" "bastion_load_balancer" {
     ]
   })
 }
+
+# ====================================================================================================
+#  DATA
+# ====================================================================================================
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity
+data "aws_caller_identity" "current" {}

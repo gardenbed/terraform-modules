@@ -3,8 +3,112 @@
 #   These updates are based on semantic rules managed outside of the Terraform scope.
 
 # ====================================================================================================
-#  Keys
+#  AUTO SCALING GROUP
 # ====================================================================================================
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group
+# https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-launch-template.html
+resource "aws_autoscaling_group" "nodes" {
+  name                 = "${var.name}-nodes"
+  min_size             = var.profile.min_size
+  desired_capacity     = var.profile.desired_capacity
+  max_size             = var.profile.max_size
+  force_delete         = false
+  vpc_zone_identifier  = local.cluster_subnet_ids
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#launch_template
+  launch_template {
+    id      = aws_launch_template.nodes.id
+    version = aws_launch_template.nodes.latest_version
+  }
+
+  # https://www.terraform.io/docs/language/expressions/dynamic-blocks.html
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#tag-and-tags
+  dynamic "tag" {
+    for_each = merge(var.common_tags, {
+      Name = "${var.name}-node"
+    })
+
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = true
+    }
+  }
+
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes = [
+      tags,
+    ]
+  }
+}
+
+# ====================================================================================================
+#  LAUNCH TEMPLATE
+# ====================================================================================================
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html
+resource "aws_launch_template" "nodes" {
+  name          = "${var.name}-nodes"
+  image_id      = data.aws_ami.nodes.id
+  instance_type = var.profile.instance_type
+  key_name      = aws_key_pair.nodes.key_name
+  user_data     = base64encode(data.template_file.node_init.rendered)
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#monitoring
+  monitoring {
+    enabled = true
+  }
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#instance-profile
+  iam_instance_profile {
+    name = aws_iam_instance_profile.nodes.name
+  }
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#network-interfaces
+  network_interfaces {
+    associate_public_ip_address = true
+    delete_on_termination       = true
+    security_groups             = [ aws_security_group.nodes.id ]
+  }
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#block-devices
+  # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/block-device-mapping-concepts.html
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      volume_type           = "gp2"
+      volume_size           = var.profile.volume_size_gb
+      delete_on_termination = true
+    }
+  }
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#tag-specifications
+  tag_specifications {
+    resource_type = "instance"
+    tags = merge(var.common_tags, {
+      Name = format("%s-node", var.name)
+
+      "kubernetes.io/cluster/${var.cluster_name}"     = "owned"
+      "k8s.io/cluster-autoscaler/${var.cluster_name}" = "owned"
+      "k8s.io/cluster-autoscaler/enabled"             = "true"
+    })
+  }
+
+  tags = merge(var.common_tags, {
+    Name = format("%s-nodes", var.name)
+  })
+
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes = [
+      tags,
+      tag_specifications.0.tags,
+    ]
+  }
+}
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair
 resource "aws_key_pair" "nodes" {
@@ -19,6 +123,27 @@ resource "aws_key_pair" "nodes" {
     ignore_changes = [
       tags,
     ]
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami
+data "aws_ami" "nodes" {
+  most_recent = true
+  owners      = [ "602401143452" ]  # Amazon EKS AMI Account ID
+
+  filter {
+    name   = "name"
+    values = [ "amazon-eks-node-${local.cluster_version}-v*" ]
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file
+data "template_file" "node_init" {
+  template = file("${path.module}/node-init.tpl")
+  vars = {
+    cluster_name          = var.cluster_name
+    cluster_endpoint      = local.cluster_endpoint
+    certificate_authority = local.cluster_certificate_authority
   }
 }
 
@@ -87,7 +212,7 @@ resource "aws_iam_role_policy_attachment" "nodes_AmazonEC2ContainerRegistryReadO
 }
 
 # ====================================================================================================
-#  Security Group
+#  SECURITY GROUP
 # ====================================================================================================
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
@@ -184,133 +309,4 @@ resource "aws_security_group_rule" "nodes_egress_all_internet" {
   security_group_id = aws_security_group.nodes.id
   cidr_blocks       = var.nodes_egress_cidrs
   description       = "Allow nodes outbound access to the Internet."
-}
-
-# ====================================================================================================
-#  Launch Template
-# ====================================================================================================
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami
-data "aws_ami" "nodes" {
-  most_recent = true
-  owners      = [ "602401143452" ]  # Amazon EKS AMI Account ID
-
-  filter {
-    name   = "name"
-    values = [ "amazon-eks-node-${local.cluster_version}-v*" ]
-  }
-}
-
-# https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file
-data "template_file" "node_init" {
-  template = file("${path.module}/node-init.tpl")
-  vars = {
-    cluster_name          = var.cluster_name
-    cluster_endpoint      = local.cluster_endpoint
-    certificate_authority = local.cluster_certificate_authority
-  }
-}
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template
-# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html
-resource "aws_launch_template" "nodes" {
-  name          = "${var.name}-nodes"
-  image_id      = data.aws_ami.nodes.id
-  instance_type = var.profile.instance_type
-  key_name      = aws_key_pair.nodes.key_name
-  user_data     = base64encode(data.template_file.node_init.rendered)
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#monitoring
-  monitoring {
-    enabled = true
-  }
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#instance-profile
-  iam_instance_profile {
-    name = aws_iam_instance_profile.nodes.name
-  }
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#network-interfaces
-  network_interfaces {
-    associate_public_ip_address = true
-    delete_on_termination       = true
-    security_groups             = [ aws_security_group.nodes.id ]
-  }
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#block-devices
-  # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/block-device-mapping-concepts.html
-  block_device_mappings {
-    device_name = "/dev/xvda"
-    ebs {
-      volume_type           = "gp2"
-      volume_size           = var.profile.volume_size_gb
-      delete_on_termination = true
-    }
-  }
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#tag-specifications
-  tag_specifications {
-    resource_type = "instance"
-    tags = merge(var.common_tags, {
-      Name = format("%s-node", var.name)
-
-      "kubernetes.io/cluster/${var.cluster_name}"     = "owned"
-      "k8s.io/cluster-autoscaler/${var.cluster_name}" = "owned"
-      "k8s.io/cluster-autoscaler/enabled"             = "true"
-    })
-  }
-
-  tags = merge(var.common_tags, {
-    Name = format("%s-nodes", var.name)
-  })
-
-  lifecycle {
-    create_before_destroy = true
-    ignore_changes = [
-      tags,
-      tag_specifications.0.tags,
-    ]
-  }
-}
-
-# ====================================================================================================
-#  Auto Scaling Group
-# ====================================================================================================
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group
-# https://docs.aws.amazon.com/autoscaling/ec2/userguide/create-asg-launch-template.html
-resource "aws_autoscaling_group" "nodes" {
-  name                 = "${var.name}-nodes"
-  min_size             = var.profile.min_size
-  desired_capacity     = var.profile.desired_capacity
-  max_size             = var.profile.max_size
-  force_delete         = false
-  vpc_zone_identifier  = local.cluster_subnet_ids
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#launch_template
-  launch_template {
-    id      = aws_launch_template.nodes.id
-    version = aws_launch_template.nodes.latest_version
-  }
-
-  # https://www.terraform.io/docs/language/expressions/dynamic-blocks.html
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#tag-and-tags
-  dynamic "tag" {
-    for_each = merge(var.common_tags, {
-      Name = "${var.name}-node"
-    })
-
-    content {
-      key                 = tag.key
-      value               = tag.value
-      propagate_at_launch = true
-    }
-  }
-
-  lifecycle {
-    create_before_destroy = true
-    ignore_changes = [
-      tags,
-    ]
-  }
 }

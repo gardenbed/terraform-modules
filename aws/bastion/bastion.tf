@@ -4,8 +4,216 @@
 #   These updates are based on semantic rules managed outside of the Terraform scope.
 
 # ====================================================================================================
-#  Key
+#  LOAD BALANCER
 # ====================================================================================================
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener
+# https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-listeners.html
+resource "aws_lb_listener" "bastion" {
+  load_balancer_arn = aws_lb.bastion.arn
+  protocol          = "TCP"
+  port              = 22
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener#default_action
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.bastion.arn
+  }
+
+  tags = merge(var.common_tags, {
+    Name = format("%s-bastion", var.name)
+  })
+
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group
+# https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html
+# https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_CreateTargetGroup.html
+resource "aws_lb_target_group" "bastion" {
+  name        = "${var.name}-bastion"
+  vpc_id      = var.vpc.id
+  target_type = "instance"
+  protocol    = "TCP"
+  port        = 22
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group#health_check
+  health_check {
+    enabled             = true
+    protocol            = "TCP"
+    port                = 22
+    interval            = 30
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+  }
+
+  tags = merge(var.common_tags, {
+    Name = format("%s-bastion", var.name)
+  })
+
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb
+# https://docs.aws.amazon.com/elasticloadbalancing/latest/network/introduction.html
+resource "aws_lb" "bastion" {
+  name                             = "${var.name}-bastion"
+  internal                         = false
+  load_balancer_type               = "network"
+  enable_cross_zone_load_balancing = true
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb#access_logs
+  access_logs {
+    enabled = true
+    bucket  = aws_s3_bucket.bastion.id
+    prefix  = local.bucket_prefix
+  }
+
+  # https://www.terraform.io/docs/language/expressions/dynamic-blocks.html
+  dynamic "subnet_mapping" {
+    for_each = var.public_subnets.*.id
+    content {
+      subnet_id     = subnet_mapping.value
+      allocation_id = aws_eip.bastion[subnet_mapping.key].id
+    }
+  }
+
+  tags = merge(var.common_tags, {
+    Name = format("%s-bastion", var.name)
+  })
+
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html
+# https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html#availability-zones
+resource "aws_eip" "bastion" {
+  count = length(var.public_subnets)
+
+  vpc = true
+
+  tags = merge(var.common_tags, {
+    Name = format("%s-bastion", var.name)
+  })
+
+  lifecycle {
+    ignore_changes = [
+      tags,
+    ]
+  }
+}
+
+# ====================================================================================================
+#  AUTO SCALING GROUP
+# ====================================================================================================
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group
+resource "aws_autoscaling_group" "bastion" {
+  name                 = "${var.name}-bastion"
+  min_size             = 1
+  desired_capacity     = 1
+  max_size             = 1
+  vpc_zone_identifier  = var.public_subnets.*.id
+  target_group_arns    = [ aws_lb_target_group.bastion.arn ]
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#launch_template
+  launch_template {
+    id      = aws_launch_template.bastion.id
+    version = aws_launch_template.bastion.latest_version
+  }
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#tag-and-tags
+  tags = [
+    for k, v in merge(var.common_tags, { Name = "${var.name}-bastion" }): {
+      key                 = k
+      value               = v
+      propagate_at_launch = true
+    }
+  ]
+
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes = [
+      tags,
+    ]
+  }
+}
+
+# ====================================================================================================
+#  LAUNCH TEMPLATE
+# ====================================================================================================
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template
+resource "aws_launch_template" "bastion" {
+  name                                 = "${var.name}-bastion"
+  image_id                             = data.aws_ami.debian.id
+  instance_type                        = var.instance_type
+  key_name                             = aws_key_pair.bastion.key_name
+  instance_initiated_shutdown_behavior = "terminate"
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#instance-profile
+  iam_instance_profile {
+    name = aws_iam_instance_profile.bastion.name
+  }
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#network-interfaces
+  network_interfaces {
+    associate_public_ip_address = false
+    delete_on_termination       = true
+    security_groups             = [ aws_security_group.bastion.id ]
+  }
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#tag-specifications
+  tag_specifications {
+    resource_type = "instance"
+
+    tags = merge(var.common_tags, {
+      Name = format("%s-bastion", var.name)
+    })
+  }
+
+  tags = merge(var.common_tags, {
+    Name = format("%s-bastion", var.name)
+  })
+
+  lifecycle {
+    ignore_changes = [
+      tags,
+      tag_specifications.0.tags,
+    ]
+  }
+}
+
+# https://wiki.debian.org/Cloud/AmazonEC2Image
+# https://wiki.debian.org/Cloud/AmazonEC2Image/Stretch
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami
+data "aws_ami" "debian" {
+  most_recent = true
+  owners      = [ "379101102735" ]
+
+  filter {
+    name   = "name"
+    values = [ "debian-stretch-hvm-x86_64-gp2-*" ]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = [ "hvm" ]
+  }
+}
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair
 resource "aws_key_pair" "bastion" {
@@ -13,7 +221,7 @@ resource "aws_key_pair" "bastion" {
   public_key = file(var.public_key_file)
 
   tags = merge(var.common_tags, {
-    "Name" = var.name
+    Name = var.name
   })
 
   lifecycle {
@@ -33,7 +241,7 @@ resource "aws_iam_instance_profile" "bastion" {
   role = aws_iam_role.bastion.name
 
   tags = merge(var.common_tags, {
-    "Name" = var.name
+    Name = var.name
   })
 
   lifecycle {
@@ -60,7 +268,7 @@ resource "aws_iam_role" "bastion" {
   })
 
   tags = merge(var.common_tags, {
-    "Name" = format("%s-bastion", var.name)
+    Name = format("%s-bastion", var.name)
   })
 
   lifecycle {
@@ -88,7 +296,7 @@ resource "aws_iam_role_policy" "bastion" {
 }
 
 # ====================================================================================================
-#  Security Group
+#  SECURITY GROUP
 # ====================================================================================================
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
@@ -150,224 +358,8 @@ resource "aws_security_group" "bastion" {
   }
 
   tags = merge(var.common_tags, {
-    "Name" = format("%s-bastion", var.name)
+    Name = format("%s-bastion", var.name)
   })
-
-  lifecycle {
-    create_before_destroy = true
-    ignore_changes = [
-      tags,
-    ]
-  }
-}
-
-# ====================================================================================================
-#  Elastic IP
-# ====================================================================================================
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip
-# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html
-# https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html#availability-zones
-resource "aws_eip" "bastion" {
-  count = length(var.public_subnets)
-
-  vpc = true
-
-  tags = merge(var.common_tags, {
-    "Name" = format("%s-bastion", var.name)
-  })
-
-  lifecycle {
-    ignore_changes = [
-      tags,
-    ]
-  }
-}
-
-# ====================================================================================================
-#  LOAD BALANCER
-# ====================================================================================================
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb
-# https://docs.aws.amazon.com/elasticloadbalancing/latest/network/introduction.html
-resource "aws_lb" "bastion" {
-  name                             = "${var.name}-bastion"
-  internal                         = false
-  load_balancer_type               = "network"
-  enable_cross_zone_load_balancing = true
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb#access_logs
-  access_logs {
-    enabled = true
-    bucket  = aws_s3_bucket.bastion.id
-    prefix  = local.bucket_prefix
-  }
-
-  # https://www.terraform.io/docs/language/expressions/dynamic-blocks.html
-  dynamic "subnet_mapping" {
-    for_each = var.public_subnets.*.id
-    content {
-      subnet_id     = subnet_mapping.value
-      allocation_id = aws_eip.bastion[subnet_mapping.key].id
-    }
-  }
-
-  tags = merge(var.common_tags, {
-    "Name" = format("%s-bastion", var.name)
-  })
-
-  lifecycle {
-    ignore_changes = [
-      tags,
-    ]
-  }
-}
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group
-# https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html
-# https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_CreateTargetGroup.html
-resource "aws_lb_target_group" "bastion" {
-  name        = "${var.name}-bastion"
-  vpc_id      = var.vpc.id
-  target_type = "instance"
-  protocol    = "TCP"
-  port        = 22
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group#health_check
-  health_check {
-    enabled             = true
-    protocol            = "TCP"
-    port                = 22
-    interval            = 30
-    healthy_threshold   = 3
-    unhealthy_threshold = 3
-  }
-
-  tags = merge(var.common_tags, {
-    "Name" = format("%s-bastion", var.name)
-  })
-
-  lifecycle {
-    ignore_changes = [
-      tags,
-    ]
-  }
-}
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener
-# https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-listeners.html
-resource "aws_lb_listener" "bastion" {
-  load_balancer_arn = aws_lb.bastion.arn
-  protocol          = "TCP"
-  port              = 22
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener#default_action
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.bastion.arn
-  }
-
-  tags = merge(var.common_tags, {
-    "Name" = format("%s-bastion", var.name)
-  })
-
-  lifecycle {
-    ignore_changes = [
-      tags,
-    ]
-  }
-}
-
-# ====================================================================================================
-#  Launch Template
-# ====================================================================================================
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami
-# https://wiki.debian.org/Cloud/AmazonEC2Image
-# https://wiki.debian.org/Cloud/AmazonEC2Image/Stretch
-data "aws_ami" "debian" {
-  most_recent = true
-  owners      = [ "379101102735" ]
-
-  filter {
-    name   = "name"
-    values = [ "debian-stretch-hvm-x86_64-gp2-*" ]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = [ "hvm" ]
-  }
-}
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template
-resource "aws_launch_template" "bastion" {
-  name                                 = "${var.name}-bastion"
-  image_id                             = data.aws_ami.debian.id
-  instance_type                        = var.instance_type
-  key_name                             = aws_key_pair.bastion.key_name
-  instance_initiated_shutdown_behavior = "terminate"
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#instance-profile
-  iam_instance_profile {
-    name = aws_iam_instance_profile.bastion.name
-  }
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#network-interfaces
-  network_interfaces {
-    associate_public_ip_address = false
-    delete_on_termination       = true
-    security_groups             = [ aws_security_group.bastion.id ]
-  }
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#tag-specifications
-  tag_specifications {
-    resource_type = "instance"
-
-    tags = merge(var.common_tags, {
-      "Name" = format("%s-bastion", var.name)
-    })
-  }
-
-  tags = merge(var.common_tags, {
-    "Name" = format("%s-bastion", var.name)
-  })
-
-  lifecycle {
-    ignore_changes = [
-      tags,
-      tag_specifications.0.tags,
-    ]
-  }
-}
-
-# ====================================================================================================
-#  Auto Scaling Group
-# ====================================================================================================
-
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group
-resource "aws_autoscaling_group" "bastion" {
-  name                 = "${var.name}-bastion"
-  min_size             = 1
-  desired_capacity     = 1
-  max_size             = 1
-  vpc_zone_identifier  = var.public_subnets.*.id
-  target_group_arns    = [ aws_lb_target_group.bastion.arn ]
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#launch_template
-  launch_template {
-    id      = aws_launch_template.bastion.id
-    version = aws_launch_template.bastion.latest_version
-  }
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#tag-and-tags
-  tags = [
-    for k, v in merge(var.common_tags, { Name = "${var.name}-bastion" }): {
-      key                 = k
-      value               = v
-      propagate_at_launch = true
-    }
-  ]
 
   lifecycle {
     create_before_destroy = true

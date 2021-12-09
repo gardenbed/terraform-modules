@@ -1,6 +1,14 @@
 # ====================================================================================================
-#  SSH
+#  SSH CONFIG
 # ====================================================================================================
+
+# https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file
+resource "local_file" "ssh_config" {
+  filename             = pathexpand("${var.ssh.ssh_path}/config-${var.name}")
+  content              = data.template_file.ssh_config.rendered
+  file_permission      = "0644"
+  directory_permission = "0700"
+}
 
 # https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file
 data "template_file" "ssh_config" {
@@ -13,12 +21,4 @@ data "template_file" "ssh_config" {
       for cidr in var.subnet_cidrs: replace(cidr, "0/24", "*")
     ])
   }
-}
-
-# https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file
-resource "local_file" "ssh_config" {
-  filename             = pathexpand("${var.ssh.ssh_path}/config-${var.name}")
-  content              = data.template_file.ssh_config.rendered
-  file_permission      = "0644"
-  directory_permission = "0700"
 }

@@ -1,5 +1,5 @@
 # ====================================================================================================
-#  Kubernetes Resources
+#  KUBERNETES
 # ====================================================================================================
 
 # https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map

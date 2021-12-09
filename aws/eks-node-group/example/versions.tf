@@ -5,21 +5,17 @@ terraform {
   # Root modules should constraint both a lower and upper bound on versions of Terraform and providers.
   required_version = "~> 1.0"
   required_providers {
-    local = {
-      source  = "hashicorp/local"
-      version = "~> 2.1"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.1.0"
-    }
     aws = {
       source  = "hashicorp/aws"
       version = "~> 3.66"
     }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.6"
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.1"
+    }
+    template = {
+      source  = "hashicorp/template"
+      version = "~> 2.2"
     }
   }
 }

@@ -56,21 +56,21 @@ variable "vpc_cidrs" {
   }
 }
 
-variable "private_outgoing_cidrs" {
-  description = "A list of trusted CIDR blocks for public subnetwork outgoing traffic."
-  type        = list(string)
-  default     = [ "0.0.0.0/0" ]
-}
-
 variable "public_incoming_cidrs" {
-  description = "A list of trusted CIDR blocks for incoming traffic to public subnetwork."
-  type        = list(string)
+  description = "A list of trusted CIDR blocks for public subnetwork incoming traffic."
+  type        = set(string)
   default     = [ "0.0.0.0/0" ]
 }
 
 variable "public_outgoing_cidrs" {
   description = "A list of trusted CIDR blocks for public subnetwork outgoing traffic."
-  type        = list(string)
+  type        = set(string)
+  default     = [ "0.0.0.0/0" ]
+}
+
+variable "private_outgoing_cidrs" {
+  description = "A list of trusted CIDR blocks for public subnetwork outgoing traffic."
+  type        = set(string)
   default     = [ "0.0.0.0/0" ]
 }
 
