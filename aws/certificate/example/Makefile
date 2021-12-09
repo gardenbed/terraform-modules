@@ -1,3 +1,9 @@
+terraform.tfvars:
+	@ echo 'access_key = "tbd"' >> terraform.tfvars
+	@ echo 'secret_key = "tbd"' >> terraform.tfvars
+	@ echo 'region     = "tbd"' >> terraform.tfvars
+	@ echo 'domain     = "tbd"' >> terraform.tfvars
+
 .PHONY: init
 init:
 	@ terraform init

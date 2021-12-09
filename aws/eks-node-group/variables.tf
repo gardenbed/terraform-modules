@@ -38,7 +38,7 @@ variable "bastion" {
 variable "ssh" {
   description = "An object containing information for ssh access to the node group."
   type = object({
-    ssh_path         = string
+    path             = string
     private_key_file = string
     public_key_file  = string
   })

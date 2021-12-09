@@ -76,18 +76,18 @@ resource "google_compute_region_health_check" "bastion_ssh" {
 # ====================================================================================================
 
 # https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file
-resource "local_file" "bastion_ssh_config" {
-  count = var.enable_ssh_keys ? 1 : 0
+resource "local_file" "ssh_config" {
+  count = var.ssh_path == null ? 0 : 1
 
   filename             = pathexpand("${var.ssh_path}/config-${var.name}")
-  content              = data.template_file.bastion_ssh_config.0.rendered
+  content              = data.template_file.ssh_config.0.rendered
   file_permission      = "0644"
   directory_permission = "0700"
 }
 
 # https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file
-data "template_file" "bastion_ssh_config" {
-  count = var.enable_ssh_keys ? 1 : 0
+data "template_file" "ssh_config" {
+  count = var.ssh_path == null ? 0 : 1
 
   template = file("${path.module}/sshconfig.tpl")
   vars = {

@@ -51,7 +51,7 @@ module "node_group" {
   }
 
   ssh = {
-    ssh_path         = var.ssh_path
+    path             = var.ssh_path
     private_key_file = var.node_group_private_key_file
     public_key_file  = var.node_group_public_key_file
   }

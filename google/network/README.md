@@ -14,3 +14,9 @@ module "network" {
   region  = "us-east1"
 }
 ```
+
+## Documentation
+
+### Addressing
+
+You can define up to three secondary ranges for each of subnetworks (public and private).

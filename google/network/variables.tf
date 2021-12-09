@@ -16,7 +16,7 @@ variable "region" {
   type        = string
 }
 
-# ==================================================< NETWORKING >==================================================
+# ==================================================< NETWORK >==================================================
 
 # https://en.wikipedia.org/wiki/Classful_network
 # https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing
@@ -24,53 +24,73 @@ variable "vpc_cidrs" {
   description = "VPC CIDR for each Google Cloud region."
   type = map(string)
   default = {
-    asia-east1              = "10.10.0.0/16"
-    asia-east2              = "10.11.0.0/16"
-    asia-northeast1         = "10.12.0.0/16"
-    asia-northeast2         = "10.13.0.0/16"
-    asia-northeast3         = "10.14.0.0/16"
-    asia-south1             = "10.15.0.0/16"
-    asia-south2             = "10.16.0.0/16"
-    asia-southeast1         = "10.17.0.0/16"
-    asia-southeast2         = "10.18.0.0/16"
-    australia-southeast1    = "10.19.0.0/16"
-    australia-southeast2    = "10.20.0.0/16"
-    europe-central2         = "10.21.0.0/16"
-    europe-north1           = "10.22.0.0/16"
-    europe-west1            = "10.23.0.0/16"
-    europe-west2            = "10.24.0.0/16"
-    europe-west3            = "10.25.0.0/16"
-    europe-west4            = "10.26.0.0/16"
-    europe-west6            = "10.27.0.0/16"
-    northamerica-northeast1 = "10.28.0.0/16"
-    northamerica-northeast2 = "10.29.0.0/16"
-    southamerica-east1      = "10.30.0.0/16"
-    southamerica-west1      = "10.31.0.0/16"
-    us-central1             = "10.32.0.0/16"
-    us-east1                = "10.33.0.0/16"
-    us-east4                = "10.34.0.0/16"
-    us-west1                = "10.35.0.0/16"
-    us-west2                = "10.36.0.0/16"
-    us-west3                = "10.37.0.0/16"
-    us-west4                = "10.38.0.0/16"
+    asia-east1              = "10.8.0.0/13"
+    asia-east2              = "10.16.0.0/13"
+    asia-northeast1         = "10.24.0.0/13"
+    asia-northeast2         = "10.32.0.0/13"
+    asia-northeast3         = "10.40.0.0/13"
+    asia-south1             = "10.48.0.0/13"
+    asia-south2             = "10.56.0.0/13"
+    asia-southeast1         = "10.64.0.0/13"
+    asia-southeast2         = "10.72.0.0/13"
+    australia-southeast1    = "10.80.0.0/13"
+    australia-southeast2    = "10.88.0.0/13"
+    europe-central2         = "10.96.0.0/13"
+    europe-north1           = "10.104.0.0/13"
+    europe-west1            = "10.112.0.0/13"
+    europe-west2            = "10.120.0.0/13"
+    europe-west3            = "10.128.0.0/13"
+    europe-west4            = "10.136.0.0/13"
+    europe-west6            = "10.144.0.0/13"
+    northamerica-northeast1 = "10.152.0.0/13"
+    northamerica-northeast2 = "10.160.0.0/13"
+    southamerica-east1      = "10.168.0.0/13"
+    southamerica-west1      = "10.176.0.0/13"
+    us-central1             = "10.184.0.0/13"
+    us-east1                = "10.192.0.0/13"
+    us-east4                = "10.200.0.0/13"
+    us-west1                = "10.208.0.0/13"
+    us-west2                = "10.216.0.0/13"
+    us-west3                = "10.224.0.0/13"
+    us-west4                = "10.232.0.0/13"
   }
 }
 
-variable "public_incoming_cidrs" {
-  description = "A list of trusted CIDR blocks for public subnetwork incoming traffic."
-  type        = set(string)
-  default     = [ "0.0.0.0/0" ]
+variable "public_secondary_ranges" {
+  description = "A set of names for the public subnetwork secondary IP ranges. The CIDR blocks are determined automatically."
+  type        = list(string)
+  default     = []
 }
+
+variable "private_secondary_ranges" {
+  description = "A set of names for the private subnetwork secondary IP ranges. The CIDR blocks are determined automatically."
+  type        = list(string)
+  default     = []
+}
+
+# ==================================================< FIREWALL >==================================================
 
 variable "public_outgoing_cidrs" {
   description = "A list of trusted CIDR blocks for public subnetwork outgoing traffic."
-  type        = set(string)
+  type        = list(string)
   default     = [ "0.0.0.0/0" ]
 }
 
 variable "private_outgoing_cidrs" {
   description = "A list of trusted CIDR blocks for public subnetwork outgoing traffic."
-  type        = set(string)
+  type        = list(string)
+  default     = [ "0.0.0.0/0" ]
+}
+
+variable "icmp_incoming_cidrs" {
+  description = "A list of trusted CIDR blocks for public subnetwork incoming traffic."
+  type        = list(string)
+  default     = [ "0.0.0.0/0" ]
+}
+
+variable "ssh_incoming_cidrs" {
+  description = "A list of trusted CIDR blocks for public subnetwork incoming traffic."
+  type        = list(string)
   default     = [ "0.0.0.0/0" ]
 }
 

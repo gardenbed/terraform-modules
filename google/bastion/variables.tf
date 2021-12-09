@@ -21,18 +21,14 @@ variable "region" {
 variable "network" {
   description = "The VPC network information."
   type = object({
-    name      = string
-    id        = string
-    self_link = string
+    id = string
   })
 }
 
 variable "public_subnetwork" {
   description = "The VPC public subnetwork information."
   type = object({
-    name        = string
     id          = string
-    self_link   = string
     network_tag = string
   })
 }
@@ -70,7 +66,7 @@ variable "enable_ssh_keys" {
 variable "ssh_path" {
   description = "The path to a directory for SSH config file."
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "ssh_private_key_file" {
@@ -88,7 +84,7 @@ variable "ssh_public_key_file" {
 # ==================================================< TAGS >==================================================
 
 variable "network_tags" {
-  description = "A list of network tags."
+  description = "A list of network tags for the resources."
   type        = list(string)
   default     = []
 }

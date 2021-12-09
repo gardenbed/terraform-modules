@@ -23,8 +23,8 @@ module "bastion" {
   region               = var.region
   network              = module.network.network
   public_subnetwork    = module.network.public_subnetwork
-  enable_os_login      = true
-  enable_ssh_keys      = false
+  enable_os_login      = false
+  enable_ssh_keys      = true
   ssh_path             = var.ssh_path
   ssh_private_key_file = var.ssh_private_key_file
   ssh_public_key_file  = var.ssh_public_key_file
