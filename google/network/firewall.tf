@@ -1,10 +1,10 @@
+# https://cloud.google.com/vpc/docs/firewalls
+
 # ====================================================================================================
 #  GENERAL
 # ====================================================================================================
 
-# https://cloud.google.com/vpc/docs/firewalls
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall
-
 resource "google_compute_firewall" "public_ingress_self" {
   name    = "${var.name}-public-allow-internal"
   project = var.project
@@ -33,6 +33,7 @@ resource "google_compute_firewall" "public_ingress_self" {
   }
 }
 
+# https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall
 resource "google_compute_firewall" "public_egress_all" {
   name    = "${var.name}-public-allow-outgoing"
   project = var.project
@@ -51,6 +52,7 @@ resource "google_compute_firewall" "public_egress_all" {
   }
 }
 
+# https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall
 resource "google_compute_firewall" "private_ingress_self" {
   name    = "${var.name}-private-allow-internal"
   project = var.project
@@ -101,6 +103,7 @@ resource "google_compute_firewall" "private_egress_all" {
 #  SPECIFIC
 # ====================================================================================================
 
+# https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall
 resource "google_compute_firewall" "public_ingress_icmp" {
   count = length(var.icmp_incoming_cidrs) > 0 ? 1 : 0
 
@@ -121,6 +124,7 @@ resource "google_compute_firewall" "public_ingress_icmp" {
   }
 }
 
+# https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall
 resource "google_compute_firewall" "public_ingress_ssh" {
   count = length(var.ssh_incoming_cidrs) > 0 ? 1 : 0
 
@@ -142,6 +146,7 @@ resource "google_compute_firewall" "public_ingress_ssh" {
   }
 }
 
+# https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall
 resource "google_compute_firewall" "private_ingress_ssh" {
   count = length(var.ssh_incoming_cidrs) > 0 ? 1 : 0
 
