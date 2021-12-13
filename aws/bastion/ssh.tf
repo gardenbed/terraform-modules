@@ -1,6 +1,6 @@
 # https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file
 resource "local_file" "ssh_config" {
-  count = length(var.ssh_path) > 0 ? 1 : 0
+  count = var.ssh_path == null ? 0 : 1
 
   filename             = pathexpand("${var.ssh_path}/config-${var.name}")
   content              = data.template_file.ssh_config.0.rendered
@@ -10,7 +10,7 @@ resource "local_file" "ssh_config" {
 
 # https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file
 data "template_file" "ssh_config" {
-  count = length(var.ssh_path) > 0 ? 1 : 0
+  count = var.ssh_path == null ? 0 : 1
 
   template = file("${path.module}/sshconfig.tpl")
   vars = {

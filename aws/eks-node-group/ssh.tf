@@ -4,7 +4,7 @@
 
 # https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file
 resource "local_file" "ssh_config" {
-  filename             = pathexpand("${var.ssh.ssh_path}/config-${var.name}")
+  filename             = pathexpand("${var.ssh.path}/config-${var.name}")
   content              = data.template_file.ssh_config.rendered
   file_permission      = "0644"
   directory_permission = "0700"

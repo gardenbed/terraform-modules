@@ -3,6 +3,12 @@ bastion_key := $(ssh_path)/bastion
 node_group_key := $(ssh_path)/node-group
 
 
+terraform.tfvars:
+	@ echo 'access_key = "tbd"' >> terraform.tfvars
+	@ echo 'secret_key = "tbd"' >> terraform.tfvars
+	@ echo 'region     = "tbd"' >> terraform.tfvars
+	@ echo 'name       = "tbd"' >> terraform.tfvars
+
 .PHONY: keys
 keys:
 	@ mkdir -p $(ssh_path)

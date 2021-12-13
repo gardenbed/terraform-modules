@@ -10,7 +10,9 @@ provider "google" {
 module "network" {
   source = "../"
 
-  name    = var.name
-  project = var.project
-  region  = var.region
+  name                     = var.name
+  project                  = var.project
+  region                   = var.region
+  public_secondary_ranges  = ["foo"]
+  private_secondary_ranges = ["bar"]
 }

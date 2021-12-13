@@ -2,6 +2,12 @@ ssh_path := ssh
 key_name := $(ssh_path)/bastion
 
 
+terraform.tfvars:
+	@ echo 'access_key = "tbd"' >> terraform.tfvars
+	@ echo 'secret_key = "tbd"' >> terraform.tfvars
+	@ echo 'region     = "tbd"' >> terraform.tfvars
+	@ echo 'name       = "tbd"' >> terraform.tfvars
+
 .PHONY: keys
 keys:
 	@ mkdir -p $(ssh_path)

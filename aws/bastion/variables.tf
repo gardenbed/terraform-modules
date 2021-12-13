@@ -46,7 +46,7 @@ variable "ssh_cidrs" {
 variable "ssh_path" {
   description = "The path to a directory for SSH config file."
   type        = string
-  default     = ""
+  default     = null
 }
 
 variable "private_key_file" {

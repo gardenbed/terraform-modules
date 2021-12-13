@@ -1,0 +1,14 @@
+Host bastion
+  HostName ${bastion_address}
+  User admin
+  IdentityFile ${bastion_private_key}
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+  LogLevel error
+Host ${node_pool_cidr_wildcard}
+  User admin
+  IdentityFile ${node_pool_private_key}
+  ProxyJump bastion
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+  LogLevel error

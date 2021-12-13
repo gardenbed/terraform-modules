@@ -55,7 +55,7 @@ module "nodes" {
   }
 
   ssh = {
-    ssh_path         = var.ssh_path
+    path             = var.ssh_path
     private_key_file = var.nodes_private_key_file
     public_key_file  = var.nodes_public_key_file
   }

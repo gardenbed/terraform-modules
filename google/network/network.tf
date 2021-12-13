@@ -22,19 +22,22 @@ resource "google_compute_network" "main" {
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_subnetwork
 
 resource "google_compute_subnetwork" "public" {
-  name                       = "${var.name}-subnet-public"
-  project                    = var.project
-  region                     = var.region
-  network                    = google_compute_network.main.id
-  ip_cidr_range              = cidrsubnet(lookup(var.vpc_cidrs, var.region), 8, 1)
-  private_ip_google_access   = false
-  private_ipv6_google_access = false
+  name                     = "${var.name}-subnet-public"
+  project                  = var.project
+  region                   = var.region
+  network                  = google_compute_network.main.id
+  ip_cidr_range            = cidrsubnet(local.public_subnetwork_cidr, 2, 0)
+  private_ip_google_access = false
 
   # https://cloud.google.com/vpc/docs/alias-ip
+  # https://www.terraform.io/docs/language/expressions/dynamic-blocks.html
   # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_subnetwork#nested_secondary_ip_range
-  secondary_ip_range {
-    range_name    = "alias-cidr"
-    ip_cidr_range = cidrsubnet(lookup(var.vpc_cidrs, var.region), 8, 2)
+  dynamic "secondary_ip_range" {
+    for_each = var.public_secondary_ranges
+    content {
+      range_name    = secondary_ip_range.value
+      ip_cidr_range = cidrsubnet(local.public_subnetwork_cidr, 2, secondary_ip_range.key + 1)
+    }
   }
 
   # https://cloud.google.com/vpc/docs/using-flow-logs
@@ -47,19 +50,22 @@ resource "google_compute_subnetwork" "public" {
 }
 
 resource "google_compute_subnetwork" "private" {
-  name                       = "${var.name}-subnet-private"
-  project                    = var.project
-  region                     = var.region
-  network                    = google_compute_network.main.id
-  ip_cidr_range              = cidrsubnet(lookup(var.vpc_cidrs, var.region), 8, 128)
-  private_ip_google_access   = true
-  private_ipv6_google_access = true
+  name                     = "${var.name}-subnet-private"
+  project                  = var.project
+  region                   = var.region
+  network                  = google_compute_network.main.id
+  ip_cidr_range            = cidrsubnet(local.private_subnetwork_cidr, 2, 0)
+  private_ip_google_access = true
 
   # https://cloud.google.com/vpc/docs/alias-ip
+  # https://www.terraform.io/docs/language/expressions/dynamic-blocks.html
   # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_subnetwork#nested_secondary_ip_range
-  secondary_ip_range {
-    range_name    = "alias-cidr"
-    ip_cidr_range = cidrsubnet(lookup(var.vpc_cidrs, var.region), 8, 129)
+  dynamic "secondary_ip_range" {
+    for_each = var.private_secondary_ranges
+    content {
+      range_name    = secondary_ip_range.value
+      ip_cidr_range = cidrsubnet(local.private_subnetwork_cidr, 2, secondary_ip_range.key + 1)
+    }
   }
 
   # https://cloud.google.com/vpc/docs/using-flow-logs
@@ -106,160 +112,5 @@ resource "google_compute_router_nat" "main" {
   subnetwork {
     name                    = google_compute_subnetwork.private.id
     source_ip_ranges_to_nat = [ "ALL_IP_RANGES" ]  # ALL_IP_RANGES, PRIMARY_IP_RANGE, LIST_OF_SECONDARY_IP_RANGES
-  }
-}
-
-# ====================================================================================================
-#  FIREWALL
-# ====================================================================================================
-
-# https://cloud.google.com/vpc/docs/firewalls
-# https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall
-
-resource "google_compute_firewall" "public_ingress_self" {
-  name    = "${var.name}-public-allow-internal"
-  project = var.project
-  network = google_compute_network.main.id
-
-  description   = "Allow all internal traffic within the public subnetwork."
-  priority      = local.default_firewall_priority
-  direction     = "INGRESS"  # INGRESS, EGRESS
-  source_ranges = local.public_subnetwork_cidr_range
-  target_tags   = [ local.public_subnetwork_tag ]
-
-  # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall#nested_allow
-
-  allow {
-    protocol = "icmp"
-  }
-
-  allow {
-    protocol = "udp"
-    ports    = ["0-65535"]
-  }
-
-  allow {
-    protocol = "tcp"
-    ports    = ["0-65535"]
-  }
-}
-
-resource "google_compute_firewall" "public_ingress_icmp" {
-  name    = "${var.name}-public-allow-icmp"
-  project = var.project
-  network = google_compute_network.main.id
-
-  description   = "Allow ICMP traffic from the trusted IP addresses to the public subnetwork."
-  priority      = local.default_firewall_priority
-  direction     = "INGRESS"  # INGRESS, EGRESS
-  source_ranges = var.public_incoming_cidrs
-  target_tags   = [ local.public_subnetwork_tag ]
-
-  # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall#nested_allow
-
-  allow {
-    protocol = "icmp"
-  }
-}
-
-resource "google_compute_firewall" "public_ingress_ssh" {
-  name    = "${var.name}-public-allow-ssh"
-  project = var.project
-  network = google_compute_network.main.id
-
-  description   = "Allow SSH traffic from the trusted IP addresses to the public subnetwork."
-  priority      = local.default_firewall_priority
-  direction     = "INGRESS"  # INGRESS, EGRESS
-  source_ranges = var.public_incoming_cidrs
-  target_tags   = [ local.public_subnetwork_tag ]
-
-  # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall#nested_allow
-
-  allow {
-    protocol = "tcp"
-    ports    = ["22"]
-  }
-}
-
-resource "google_compute_firewall" "public_egress_all" {
-  name    = "${var.name}-public-allow-outgoing"
-  project = var.project
-  network = google_compute_network.main.id
-
-  description        = "Allow all outgoing traffic from the public subnetwork to the trusted IP addresses."
-  priority           = local.default_firewall_priority
-  direction          = "EGRESS"  # INGRESS, EGRESS
-  destination_ranges = var.public_outgoing_cidrs
-  target_tags        = [ local.public_subnetwork_tag ]
-
-  # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall#nested_allow
-
-  allow {
-    protocol = "all"
-  }
-}
-
-resource "google_compute_firewall" "private_ingress_self" {
-  name    = "${var.name}-private-allow-internal"
-  project = var.project
-  network = google_compute_network.main.id
-
-  description   = "Allow all internal traffic within the private subnetwork."
-  priority      = local.default_firewall_priority
-  direction     = "INGRESS"  # INGRESS, EGRESS
-  source_ranges = local.private_subnetwork_cidr_range
-  target_tags   = [ local.private_subnetwork_tag ]
-
-  # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall#nested_allow
-
-  allow {
-    protocol = "icmp"
-  }
-
-  allow {
-    protocol = "udp"
-    ports    = ["0-65535"]
-  }
-
-  allow {
-    protocol = "tcp"
-    ports    = ["0-65535"]
-  }
-}
-
-resource "google_compute_firewall" "private_ingress_ssh" {
-  name    = "${var.name}-private-allow-ssh"
-  project = var.project
-  network = google_compute_network.main.id
-
-  description   = "Allow SSH traffic from the public subnetwork to the private subnetwork."
-  priority      = local.default_firewall_priority
-  direction     = "INGRESS"  # INGRESS, EGRESS
-  source_ranges = local.public_subnetwork_cidr_range
-  target_tags   = [ local.private_subnetwork_tag ]
-
-  # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall#nested_allow
-
-  allow {
-    protocol = "tcp"
-    ports    = [ "22" ]
-  }
-}
-
-resource "google_compute_firewall" "private_egress_all" {
-  name    = "${var.name}-private-allow-outgoing"
-  project = var.project
-  network = google_compute_network.main.id
-
-  description        = "Allow all outgoing traffic from the private subnetwork to the trusted IP addresses."
-  priority           = local.default_firewall_priority
-  direction          = "EGRESS"  # INGRESS, EGRESS
-  destination_ranges = var.private_outgoing_cidrs
-  target_tags        = [ local.private_subnetwork_tag ]
-
-  # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall#nested_allow
-
-  allow {
-    protocol = "all"
   }
 }

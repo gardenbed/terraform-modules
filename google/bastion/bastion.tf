@@ -140,8 +140,8 @@ resource "google_compute_instance_template" "bastion" {
   )
 
   tags = concat(var.network_tags, [
-    var.public_subnetwork.network_tag,
     local.bastion_tag,
+    var.public_subnetwork.network_tag,
   ])
 
   labels = merge(var.common_labels, {
