@@ -1,5 +1,8 @@
 name: Google GKE Cluster
-on: [push]
+on:
+  push:
+    paths:
+      - 'google/gke-cluster/**'
 jobs:
   terraform:
     name: Validate

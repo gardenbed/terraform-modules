@@ -1,5 +1,8 @@
 name: AWS Certificate
-on: [push]
+on:
+  push:
+    paths:
+      - 'aws/certificate/**'
 jobs:
   terraform:
     name: Validate

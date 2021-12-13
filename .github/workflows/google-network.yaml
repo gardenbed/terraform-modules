@@ -1,5 +1,8 @@
 name: Google Network
-on: [push]
+on:
+  push:
+    paths:
+      - 'google/network/**'
 jobs:
   terraform:
     name: Validate
