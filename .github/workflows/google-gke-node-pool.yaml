@@ -1,5 +1,8 @@
 name: Google GKE Node Pool
-on: [push]
+on:
+  push:
+    paths:
+      - 'google/gke-node-pool/**'
 jobs:
   terraform:
     name: Validate

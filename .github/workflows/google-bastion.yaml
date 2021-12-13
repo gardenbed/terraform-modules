@@ -1,5 +1,8 @@
 name: Google Bastion
-on: [push]
+on:
+  push:
+    paths:
+      - 'google/bastion/**'
 jobs:
   terraform:
     name: Validate

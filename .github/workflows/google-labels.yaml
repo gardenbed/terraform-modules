@@ -1,5 +1,8 @@
 name: Google Labels
-on: [push]
+on:
+  push:
+    paths:
+      - 'google/labels/**'
 jobs:
   terraform:
     name: Validate

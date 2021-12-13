@@ -1,5 +1,8 @@
 name: AWS EKS Node Group
-on: [push]
+on:
+  push:
+    paths:
+      - 'aws/eks-node-group/**'
 jobs:
   terraform:
     name: Validate

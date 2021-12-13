@@ -1,5 +1,8 @@
 name: AWS Bastion
-on: [push]
+on:
+  push:
+    paths:
+      - 'aws/bastion/**'
 jobs:
   terraform:
     name: Validate

@@ -1,5 +1,8 @@
 name: AWS Tags
-on: [push]
+on:
+  push:
+    paths:
+      - 'aws/tags/**'
 jobs:
   terraform:
     name: Validate

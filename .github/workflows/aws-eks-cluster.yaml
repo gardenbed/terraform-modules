@@ -1,5 +1,8 @@
 name: AWS EKS Cluster
-on: [push]
+on:
+  push:
+    paths:
+      - 'aws/eks-cluster/**'
 jobs:
   terraform:
     name: Validate

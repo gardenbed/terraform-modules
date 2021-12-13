@@ -2,7 +2,7 @@
 # https://www.terraform.io/docs/language/expressions/type-constraints.html
 
 output "address" {
-  description = "The external IP address of the load balancer."
+  description = "The static external IP address of the load balancer."
   value = google_compute_address.bastion_ssh.0.address
 }
 

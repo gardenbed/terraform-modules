@@ -1,5 +1,8 @@
 name: AWS Network
-on: [push]
+on:
+  push:
+    paths:
+      - 'aws/network/**'
 jobs:
   terraform:
     name: Validate
