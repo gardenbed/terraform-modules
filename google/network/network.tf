@@ -6,7 +6,7 @@
 
 # https://cloud.google.com/vpc/docs/vpc
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_network
-resource "google_compute_network" "main" {
+resource "google_compute_network" "vpc" {
   name                            = "${var.name}-network"
   project                         = var.project
   routing_mode                    = "REGIONAL"  # REGIONAL, GLOBAL
@@ -25,7 +25,7 @@ resource "google_compute_subnetwork" "public" {
   name                     = "${var.name}-subnet-public"
   project                  = var.project
   region                   = var.region
-  network                  = google_compute_network.main.id
+  network                  = google_compute_network.vpc.id
   ip_cidr_range            = cidrsubnet(local.public_subnetwork_cidr, 2, 0)
   private_ip_google_access = false
 
@@ -53,7 +53,7 @@ resource "google_compute_subnetwork" "private" {
   name                     = "${var.name}-subnet-private"
   project                  = var.project
   region                   = var.region
-  network                  = google_compute_network.main.id
+  network                  = google_compute_network.vpc.id
   ip_cidr_range            = cidrsubnet(local.private_subnetwork_cidr, 2, 0)
   private_ip_google_access = true
 
@@ -78,7 +78,7 @@ resource "google_compute_subnetwork" "private" {
 }
 
 # ====================================================================================================
-#  ROUTERS
+#  NAT
 # ====================================================================================================
 
 # https://cloud.google.com/vpc/docs/routes
@@ -86,15 +86,15 @@ resource "google_compute_subnetwork" "private" {
 # https://cloud.google.com/nat/docs/overview
 
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_router
-resource "google_compute_router" "main" {
+resource "google_compute_router" "nat" {
   name    = "${var.name}-router"
   project = var.project
   region  = var.region
-  network = google_compute_network.main.id
+  network = google_compute_network.vpc.id
 }
 
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_router_nat
-resource "google_compute_router_nat" "main" {
+resource "google_compute_router_nat" "nat" {
   name                               = "${var.name}-router-nat"
   project                            = var.project
   region                             = var.region

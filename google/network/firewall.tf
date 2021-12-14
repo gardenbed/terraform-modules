@@ -8,7 +8,7 @@
 resource "google_compute_firewall" "public_ingress_self" {
   name    = "${var.name}-public-allow-internal"
   project = var.project
-  network = google_compute_network.main.id
+  network = google_compute_network.vpc.id
 
   description   = "Allow all internal traffic within the public subnetwork."
   priority      = local.default_firewall_priority
@@ -37,7 +37,7 @@ resource "google_compute_firewall" "public_ingress_self" {
 resource "google_compute_firewall" "public_egress_all" {
   name    = "${var.name}-public-allow-outgoing"
   project = var.project
-  network = google_compute_network.main.id
+  network = google_compute_network.vpc.id
 
   description        = "Allow all outgoing traffic from the public subnetwork to the trusted IP addresses."
   priority           = local.default_firewall_priority
@@ -56,7 +56,7 @@ resource "google_compute_firewall" "public_egress_all" {
 resource "google_compute_firewall" "private_ingress_self" {
   name    = "${var.name}-private-allow-internal"
   project = var.project
-  network = google_compute_network.main.id
+  network = google_compute_network.vpc.id
 
   description   = "Allow all internal traffic within the private subnetwork."
   priority      = local.default_firewall_priority
@@ -84,7 +84,7 @@ resource "google_compute_firewall" "private_ingress_self" {
 resource "google_compute_firewall" "private_egress_all" {
   name    = "${var.name}-private-allow-outgoing"
   project = var.project
-  network = google_compute_network.main.id
+  network = google_compute_network.vpc.id
 
   description        = "Allow all outgoing traffic from the private subnetwork to the trusted IP addresses."
   priority           = local.default_firewall_priority
@@ -109,7 +109,7 @@ resource "google_compute_firewall" "public_ingress_icmp" {
 
   name    = "${var.name}-public-allow-icmp"
   project = var.project
-  network = google_compute_network.main.id
+  network = google_compute_network.vpc.id
 
   description   = "Allow ICMP traffic from the trusted IP addresses to the public subnetwork."
   priority      = local.default_firewall_priority
@@ -130,7 +130,7 @@ resource "google_compute_firewall" "public_ingress_ssh" {
 
   name    = "${var.name}-public-allow-ssh"
   project = var.project
-  network = google_compute_network.main.id
+  network = google_compute_network.vpc.id
 
   description   = "Allow SSH traffic from the trusted IP addresses to the public subnetwork."
   priority      = local.default_firewall_priority
@@ -152,7 +152,7 @@ resource "google_compute_firewall" "private_ingress_ssh" {
 
   name    = "${var.name}-private-allow-ssh"
   project = var.project
-  network = google_compute_network.main.id
+  network = google_compute_network.vpc.id
 
   description   = "Allow SSH traffic from the public subnetwork to the private subnetwork."
   priority      = local.default_firewall_priority

@@ -4,9 +4,9 @@
 output "network" {
   description = "The VPC network information."
   value = {
-    name      = google_compute_network.main.name
-    id        = google_compute_network.main.id
-    self_link = google_compute_network.main.self_link
+    name      = google_compute_network.vpc.name
+    id        = google_compute_network.vpc.id
+    self_link = google_compute_network.vpc.self_link
   }
 }
 
