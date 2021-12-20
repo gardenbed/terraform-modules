@@ -40,9 +40,9 @@ resource "aws_eks_cluster" "cluster" {
 
   # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_cluster#timeouts
   timeouts {
-    create = var.create_timeout
-    update = var.update_timeout
-    delete = var.delete_timeout
+    create = var.timeouts.create
+    update = var.timeouts.update
+    delete = var.timeouts.delete
   }
 
   tags = merge(var.common_tags, var.cluster_tags, {
