@@ -8,11 +8,7 @@ provider "aws" {
 module "certificate" {
   source = "../"
 
-  domain      = var.domain
-  cert_domain = var.domain
-
-  cert_alt_domains = [
-    "api.${var.domain}",
-    "app.${var.domain}",
-  ]
+  domain           = var.domain
+  cert_domain      = var.domain
+  cert_alt_domains = [ "api.${var.domain}", "app.${var.domain}" ]
 }
