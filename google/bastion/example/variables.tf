@@ -1,3 +1,7 @@
+variable "credentials_file" {
+  type = string
+}
+
 variable "name" {
   type = string
 }

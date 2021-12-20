@@ -1,3 +1,5 @@
+credentials_file := ../../account.json
+
 ssh_user := admin
 ssh_path := ssh
 key_file := $(ssh_path)/bastion
@@ -30,24 +32,28 @@ validate:
 .PHONY: plan
 plan:
 	@ terraform plan \
+	    -var credentials_file=$(credentials_file) \
 	    -var ssh_public_key_file=$(key_file).pub \
 	    -var ssh_private_key_file=$(key_file).pem
 
 .PHONY: apply
 apply:
 	@ terraform apply \
+	    -var credentials_file=$(credentials_file) \
 	    -var ssh_public_key_file=$(key_file).pub \
 	    -var ssh_private_key_file=$(key_file).pem
 
 .PHONY: refresh
 refresh:
 	@ terraform refresh \
+	    -var credentials_file=$(credentials_file) \
 	    -var ssh_public_key_file=$(key_file).pub \
 	    -var ssh_private_key_file=$(key_file).pem
 
 .PHONY: destroy
 destroy:
 	@ terraform destroy \
+	    -var credentials_file=$(credentials_file) \
 	    -var ssh_public_key_file=$(key_file).pub \
 	    -var ssh_private_key_file=$(key_file).pem
 

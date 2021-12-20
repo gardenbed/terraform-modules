@@ -1,3 +1,6 @@
+credentials_file := ../../account.json
+
+
 terraform.tfvars:
 	@ echo 'name    = "tbd"' >> terraform.tfvars
 	@ echo 'project = "tbd"' >> terraform.tfvars
@@ -17,19 +20,23 @@ validate:
 
 .PHONY: plan
 plan:
-	@ terraform plan
+	@ terraform plan \
+	    -var credentials_file=$(credentials_file)
 
 .PHONY: apply
 apply:
-	@ terraform apply
+	@ terraform apply \
+	    -var credentials_file=$(credentials_file)
 
 .PHONY: refresh
 refresh:
-	@ terraform refresh
+	@ terraform refresh \
+	    -var credentials_file=$(credentials_file)
 
 .PHONY: destroy
 destroy:
-	@ terraform destroy
+	@ terraform destroy \
+	    -var credentials_file=$(credentials_file)
 
 .PHONY: clean
 clean:
