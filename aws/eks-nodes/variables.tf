@@ -4,6 +4,7 @@
 variable "name" {
   description = "A human-readable name for the nodes."
   type        = string
+  nullable    = false
 }
 
 # ==================================================< NODE GROUP >==================================================
@@ -11,11 +12,13 @@ variable "name" {
 variable "cluster_name" {
   description = "The name of the cluster for the nodes."
   type        = string
+  nullable    = false
 }
 
 variable "cluster_additional_security_group_id" {
   description = "The additional security group ID of the cluster for the nodes."
   type        = string
+  nullable    = false
 }
 
 # ==================================================< NETWORK >==================================================
@@ -23,32 +26,35 @@ variable "cluster_additional_security_group_id" {
 variable "subnet_cidrs" {
   description = "The list of private subnet CIDR blocks."
   type        = list(string)
+  nullable    = false
 }
 
 variable "nodes_egress_cidrs" {
   description = "A list of trusted CIDR blocks that are permitted for the nodes egress traffic."
   type        = set(string)
+  nullable    = false
   default     = [ "0.0.0.0/0" ]
 }
 
 # ==================================================< SSH >==================================================
 
-variable "bastion" {
-  description = "An object containing information about the bastion hosts."
+variable "ssh" {
+  description = "An object containing information required for enabling SSH access to nodes."
   type = object({
-    security_group_id = string
-    dns_name          = string
-    private_key_file  = string
+    bastion_security_group_id = string
+    nodes_public_key_file     = string
   })
+  nullable = false
 }
 
-variable "ssh" {
-  description = "An object containing information for ssh access to the nodes."
+variable "ssh_config_file" {
+  description = "An object containing information required for writting the SSH config file."
   type = object({
-    path             = string
-    private_key_file = string
-    public_key_file  = string
+    bastion_address          = string
+    bastion_private_key_file = string
+    nodes_private_key_file   = string
   })
+  nullable = false
 }
 
 # ==================================================< SPEC >==================================================
@@ -62,6 +68,7 @@ variable "profile" {
     desired_capacity = number
     max_size         = number
   })
+  nullable = false
   default = {
     instance_type    = "t2.micro"
     volume_size_gb   = 32
@@ -71,26 +78,10 @@ variable "profile" {
   }
 }
 
-variable "labels" {
-  description = "A key-value map of Kubernetes labels to be applied to the nodes."
-  type        = map(string)
-  default     = {}
-}
-
-variable "taints" {
-  description = "A list of Kubernetes taints to be applied to the nodes."
-  type = list(object({
-    key    = string # maximum length of 63
-    value  = string # maximum length of 63
-    effect = string # "NO_SCHEDULE", "NO_EXECUTE", "PREFER_NO_SCHEDULE"
-  }))
-  default = []
-}
-
 # ==================================================< TAGS >==================================================
 
 variable "common_tags" {
   description = "A map of common tags for the resources."
   type        = map(string)
-  default     = {}
+  default     = null
 }

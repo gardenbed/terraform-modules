@@ -5,7 +5,6 @@
 # ====================================================================================================
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate
-# https://www.terraform.io/docs/language/meta-arguments/lifecycle.html
 resource "aws_acm_certificate" "main" {
   validation_method         = "DNS"
   domain_name               = var.cert_domain
@@ -20,7 +19,7 @@ resource "aws_acm_certificate" "main" {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate_validation
 resource "aws_acm_certificate_validation" "main" {
   certificate_arn         = aws_acm_certificate.main.arn
-  validation_record_fqdns = aws_route53_record.validation.*.fqdn
+  validation_record_fqdns = values(aws_route53_record.validation).*.fqdn
 }
 
 # ====================================================================================================

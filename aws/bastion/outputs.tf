@@ -23,5 +23,5 @@ output "load_balancer_zone_id" {
 
 output "ssh_config_file" {
   description = "The path to SSH config file for the bastion hosts."
-  value       = var.ssh_path == null ? null : local_file.ssh_config.0.filename
+  value       = var.ssh_config_file == null ? null : local_file.ssh_config.0.filename
 }

@@ -4,16 +4,19 @@
 variable "name" {
   description = "A human-readable name for the deployment."
   type        = string
+  nullable    = false
 }
 
 variable "region" {
   description = "The AWS region for the deployment."
   type        = string
+  nullable    = false
 }
 
 variable "az_count" {
   description = "The total number of availability zones required."
   type        = number
+  nullable    = false
   default     = 99 # Default to all availability zones
 }
 
@@ -24,6 +27,7 @@ variable "az_count" {
 variable "vpc_cidrs" {
   description = "VPC CIDR for each AWS region."
   type = map(string)
+  nullable = false
   default = {
     af-south-1     = "10.10.0.0/16",
     ap-east-1      = "10.11.0.0/16",
@@ -52,6 +56,7 @@ variable "vpc_cidrs" {
 variable "enable_vpc_logs" {
   description = "Whether or not to enable VPC flow logs."
   type        = bool
+  nullable    = false
   default     = false
 }
 
@@ -60,12 +65,14 @@ variable "enable_vpc_logs" {
 variable "enable_public_subnets" {
   description = "Whether or not to deploy public subnets."
   type        = bool
+  nullable    = false
   default     = true
 }
 
 variable "enable_private_subnets" {
   description = "Whether or not to deploy private subnets."
   type        = bool
+  nullable    = false
   default     = true
 }
 
@@ -74,23 +81,23 @@ variable "enable_private_subnets" {
 variable "common_tags" {
   description = "A map of common tags for the deployment resources."
   type        = map(string)
-  default     = {}
+  default     = null
 }
 
 variable "vpc_tags" {
   description = "A map of tags to be applied to VPC resource."
   type        = map(string)
-  default     = {}
+  default     = null
 }
 
 variable "public_subnet_tags" {
   description = "A map of tags to be applied to public subnets."
   type        = map(string)
-  default     = {}
+  default     = null
 }
 
 variable "private_subnet_tags" {
   description = "A map of tags to be applied to private subnets."
   type        = map(string)
-  default     = {}
+  default     = null
 }

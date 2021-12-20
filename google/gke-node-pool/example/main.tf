@@ -3,15 +3,15 @@
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/provider_reference
 
 provider "google" {
+  credentials = file(var.credentials_file)
   project     = var.project
   region      = var.region
-  credentials = file("../../account.json")
 }
 
 provider "google-beta" {
+  credentials = file(var.credentials_file)
   project     = var.project
   region      = var.region
-  credentials = file("../../account.json")
 }
 
 module "network" {
@@ -58,12 +58,13 @@ module "node_pool" {
   network_tag           = module.network.private_subnetwork.network_tag
 
   ssh = {
-    path = var.ssh_path
+    node_pool_public_key_file = var.node_pool_public_key_file
+  }
 
+  ssh_config_file = {
     bastion_address            = module.bastion.address
     bastion_private_key_file   = var.bastion_private_key_file
     node_pool_cidr             = module.network.private_subnetwork.primary_cidr
     node_pool_private_key_file = var.node_pool_private_key_file
-    node_pool_public_key_file  = var.node_pool_public_key_file
   }
 }

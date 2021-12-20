@@ -218,7 +218,7 @@ data "aws_ami" "debian" {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair
 resource "aws_key_pair" "bastion" {
   key_name   = "${var.name}-bastion"
-  public_key = file(var.public_key_file)
+  public_key = file(var.ssh_public_key_file)
 
   tags = merge(var.common_tags, {
     Name = var.name

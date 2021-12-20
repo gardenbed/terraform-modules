@@ -16,14 +16,10 @@ variable "name" {
   type = string
 }
 
-variable "ssh_path" {
+variable "ssh_public_key_file" {
   type = string
 }
 
-variable "private_key_file" {
-  type = string
-}
-
-variable "public_key_file" {
+variable "ssh_private_key_file" {
   type = string
 }

@@ -4,16 +4,19 @@
 variable "name" {
   description = "A human-readable name for the deployment resources."
   type        = string
+  nullable    = false
 }
 
 variable "project" {
   description = "A Google Cloud project to manage deployment resources in."
   type        = string
+  nullable    = false
 }
 
 variable "region" {
   description = "A Google Cloud region to manage deployment resources in."
   type        = string
+  nullable    = false
 }
 
 # ==================================================< NETWORK >==================================================
@@ -23,6 +26,7 @@ variable "network" {
   type = object({
     id = string
   })
+  nullable = false
 }
 
 variable "public_subnetwork" {
@@ -31,6 +35,7 @@ variable "public_subnetwork" {
     id          = string
     network_tag = string
   })
+  nullable = false
 }
 
 # ==================================================< INSTANCE >==================================================
@@ -38,7 +43,8 @@ variable "public_subnetwork" {
 variable "machine_type" {
   description = "The Google Cloud machine type for the bastion instances."
   type        = string
-  default     = "e2-small"
+  nullable    = false
+  default     = "e2-micro"
 }
 
 # ==================================================< OS LOGINS >==================================================
@@ -46,12 +52,14 @@ variable "machine_type" {
 variable "enable_os_login" {
   description = "Whether or not to enable OS Login for accessing the bastion instances."
   type        = bool
+  nullable    = false
   default     = true
 }
 
 variable "members" {
   description = "A list of IAM identities allowed accessing to the bastion instances."
   type        = set(string)
+  nullable    = false
   default     = [ "allAuthenticatedUsers" ]
 }
 
@@ -60,25 +68,22 @@ variable "members" {
 variable "enable_ssh_keys" {
   description = "Whether or not to enable SSH keys for accessing the bastion instances."
   type        = bool
+  nullable    = false
   default     = false
 }
 
-variable "ssh_path" {
-  description = "The path to a directory for SSH config file."
-  type        = string
-  default     = null
-}
-
-variable "ssh_private_key_file" {
-  description = "The path to the SSH private key file for bastion hosts."
-  type        = string
-  default     = null
-}
-
 variable "ssh_public_key_file" {
-  description = "The path to the SSH public key file for accessing the bastion instances."
+  description = "The path to public key file for SSH access to bastion instances. This is only required if enable_ssh_keys is true."
   type        = string
   default     = null
+}
+
+variable "ssh_config_file" {
+  description = "If set, an SSH config file will be written next to the private key file."
+  type = object({
+    private_key_file = string
+  })
+  default = null
 }
 
 # ==================================================< TAGS >==================================================
@@ -86,6 +91,7 @@ variable "ssh_public_key_file" {
 variable "network_tags" {
   description = "A list of network tags for the resources."
   type        = list(string)
+  nullable    = false
   default     = []
 }
 
@@ -94,5 +100,5 @@ variable "network_tags" {
 variable "common_labels" {
   description = "A map of common labels for the resources."
   type        = map(string)
-  default     = {}
+  default     = null
 }

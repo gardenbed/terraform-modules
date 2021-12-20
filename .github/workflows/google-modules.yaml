@@ -1,0 +1,38 @@
+name: Google Modules
+on:
+  push:
+    paths:
+      - 'google/**'
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup
+        run: touch ./google/account.json
+      - name: Validate bastion
+        uses: gardenbed/actions/terraform@main
+        with:
+          path: ./google/bastion/example
+          args: validate
+      - name: Validate gke-cluster
+        uses: gardenbed/actions/terraform@main
+        with:
+          path: ./google/gke-cluster/example
+          args: validate
+      - name: Validate gke-node-pool
+        uses: gardenbed/actions/terraform@main
+        with:
+          path: ./google/gke-node-pool/example
+          args: validate
+      - name: Validate labels
+        uses: gardenbed/actions/terraform@main
+        with:
+          path: ./google/labels/example
+          args: validate
+      - name: Validate network
+        uses: gardenbed/actions/terraform@main
+        with:
+          path: ./google/network/example
+          args: validate

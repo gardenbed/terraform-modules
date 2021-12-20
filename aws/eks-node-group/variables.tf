@@ -4,6 +4,7 @@
 variable "name" {
   description = "A human-readable name for the node group."
   type        = string
+  nullable    = false
 }
 
 # ==================================================< NODE GROUP >==================================================
@@ -11,6 +12,7 @@ variable "name" {
 variable "cluster_name" {
   description = "The name of the cluster for the node group."
   type        = string
+  nullable    = false
 }
 
 # ==================================================< NETWORK >==================================================
@@ -22,26 +24,28 @@ variable "subnets" {
     cidr              = string
     availability_zone = string
   }))
+  nullable = false
 }
 
 # ==================================================< SSH >==================================================
 
-variable "bastion" {
-  description = "An object containing information about the bastion hosts."
+variable "ssh" {
+  description = "An object containing information required for enabling SSH access to node group."
   type = object({
-    security_group_id = string
-    dns_name          = string
-    private_key_file  = string
+    bastion_security_group_id  = string
+    node_group_public_key_file = string
   })
+  nullable = false
 }
 
-variable "ssh" {
-  description = "An object containing information for ssh access to the node group."
+variable "ssh_config_file" {
+  description = "An object containing information required for writting the SSH config file."
   type = object({
-    path             = string
-    private_key_file = string
-    public_key_file  = string
+    bastion_address             = string
+    bastion_private_key_file    = string
+    node_group_private_key_file = string
   })
+  nullable = false
 }
 
 # ==================================================< SPEC >==================================================
@@ -61,6 +65,7 @@ variable "profile" {
     update_timeout             = string
     delete_timeout             = string
   })
+  nullable = false
   default = {
     capacity_type              = "ON_DEMAND"
     instance_types             = [ "t2.micro" ]
@@ -76,12 +81,6 @@ variable "profile" {
   }
 }
 
-variable "labels" {
-  description = "A key-value map of Kubernetes labels to be applied to the nodes in the node group."
-  type        = map(string)
-  default     = {}
-}
-
 variable "taints" {
   description = "A list of Kubernetes taints to be applied to the nodes in the node group."
   type = list(object({
@@ -89,7 +88,14 @@ variable "taints" {
     value  = string # maximum length of 63
     effect = string # "NO_SCHEDULE", "NO_EXECUTE", "PREFER_NO_SCHEDULE"
   }))
+  nullable = false
   default = []
+}
+
+variable "labels" {
+  description = "A key-value map of Kubernetes labels to be applied to the nodes in the node group."
+  type        = map(string)
+  default     = null
 }
 
 # ==================================================< TAGS >==================================================
@@ -97,5 +103,5 @@ variable "taints" {
 variable "common_tags" {
   description = "A map of common tags for the resources."
   type        = map(string)
-  default     = {}
+  default     = null
 }

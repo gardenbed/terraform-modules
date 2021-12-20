@@ -1,3 +1,7 @@
+variable "credentials_file" {
+  type = string
+}
+
 variable "name" {
   type = string
 }
@@ -7,10 +11,6 @@ variable "project" {
 }
 
 variable "region" {
-  type = string
-}
-
-variable "ssh_path" {
   type = string
 }
 

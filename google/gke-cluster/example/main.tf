@@ -3,15 +3,15 @@
 # https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/provider_reference
 
 provider "google" {
+  credentials = file(var.credentials_file)
   project     = var.project
   region      = var.region
-  credentials = file("../../account.json")
 }
 
 provider "google-beta" {
+  credentials = file(var.credentials_file)
   project     = var.project
   region      = var.region
-  credentials = file("../../account.json")
 }
 
 module "network" {

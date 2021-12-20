@@ -3,11 +3,11 @@
 
 terraform {
   # Reusable modules should constrain only their minimum allowed versions of Terraform and providers.
-  required_version = ">= 1.0.0"
+  required_version = ">= 1.1.0"
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = ">= 4.3.0"
+      version = ">= 4.4.0"
     }
     local = {
       source  = "hashicorp/local"

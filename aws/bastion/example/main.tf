@@ -16,11 +16,12 @@ module "network" {
 module "bastion" {
   source = "../"
 
-  name             = var.name
-  region           = var.region
-  vpc              = module.network.vpc
-  public_subnets   = module.network.public_subnets
-  ssh_path         = var.ssh_path
-  private_key_file = var.private_key_file
-  public_key_file  = var.public_key_file
+  name                = var.name
+  region              = var.region
+  vpc                 = module.network.vpc
+  public_subnets      = module.network.public_subnets
+  ssh_public_key_file = var.ssh_public_key_file
+  ssh_config_file = {
+    private_key_file = var.ssh_private_key_file
+  }
 }
