@@ -1,0 +1,46 @@
+name: AWS Modules
+on:
+  push:
+    paths:
+      - 'aws/**'
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Validate bastion
+        uses: gardenbed/actions/terraform@main
+        with:
+          path: ./aws/bastion/example
+          args: validate
+      - name: Validate certificate
+        uses: gardenbed/actions/terraform@main
+        with:
+          path: ./aws/certificate/example
+          args: validate
+      - name: Validate eks-cluster
+        uses: gardenbed/actions/terraform@main
+        with:
+          path: ./aws/eks-cluster/example
+          args: validate
+      - name: Validate eks-node-group
+        uses: gardenbed/actions/terraform@main
+        with:
+          path: ./aws/eks-node-group/example
+          args: validate
+      - name: Validate eks-nodes
+        uses: gardenbed/actions/terraform@main
+        with:
+          path: ./aws/eks-nodes/example
+          args: validate
+      - name: Validate network
+        uses: gardenbed/actions/terraform@main
+        with:
+          path: ./aws/network/example
+          args: validate
+      - name: Validate tags
+        uses: gardenbed/actions/terraform@main
+        with:
+          path: ./aws/tags/example
+          args: validate
