@@ -3,5 +3,6 @@
 
 variable "iam_role_arns" {
   description = "The list of AWS IAM Roles of the nodes."
-  type = list(string)
+  type        = list(string)
+  nullable    = false
 }
