@@ -10,10 +10,6 @@ variable "region" {
   type = string
 }
 
-variable "ssh_path" {
-  type = string
-}
-
 variable "bastion_private_key_file" {
   type = string
 }

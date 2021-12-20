@@ -34,7 +34,6 @@ validate:
 .PHONY: plan
 plan:
 	@ terraform plan \
-	    -var ssh_path=$(ssh_path) \
 	    -var bastion_private_key_file=$(bastion_key).pem \
 	    -var bastion_public_key_file=$(bastion_key).pub \
 	    -var node_pool_private_key_file=$(node_pool_key).pem \
@@ -43,7 +42,6 @@ plan:
 .PHONY: apply
 apply:
 	@ terraform apply \
-	    -var ssh_path=$(ssh_path) \
 	    -var bastion_private_key_file=$(bastion_key).pem \
 	    -var bastion_public_key_file=$(bastion_key).pub \
 	    -var node_pool_private_key_file=$(node_pool_key).pem \
@@ -52,7 +50,6 @@ apply:
 .PHONY: refresh
 refresh:
 	@ terraform refresh \
-	    -var ssh_path=$(ssh_path) \
 	    -var bastion_private_key_file=$(bastion_key).pem \
 	    -var bastion_public_key_file=$(bastion_key).pub \
 	    -var node_pool_private_key_file=$(node_pool_key).pem \
@@ -61,7 +58,6 @@ refresh:
 .PHONY: destroy
 destroy:
 	@ terraform destroy \
-	    -var ssh_path=$(ssh_path) \
 	    -var bastion_private_key_file=$(bastion_key).pem \
 	    -var bastion_public_key_file=$(bastion_key).pub \
 	    -var node_pool_private_key_file=$(node_pool_key).pem \

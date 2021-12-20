@@ -4,16 +4,19 @@
 variable "name" {
   description = "A human-readable name for the node pool resources."
   type        = string
+  nullable    = false
 }
 
 variable "project" {
   description = "A Google Cloud project to manage node pool resources in."
   type        = string
+  nullable    = false
 }
 
 variable "region" {
   description = "A Google Cloud region to manage node pool resources in."
   type        = string
+  nullable    = false
 }
 
 # ==================================================< NODE POOL >==================================================
@@ -21,16 +24,19 @@ variable "region" {
 variable "cluster_id" {
   description = "The cluster ID for the node pool."
   type        = string
+  nullable    = false
 }
 
 variable "service_account_email" {
   description = "The service account email for the node pool."
   type        = string
+  nullable    = false
 }
 
 variable "network_tag" {
   description = "The network tag for the node pool."
   type        = string
+  nullable    = false
 }
 
 variable "upgrade" {
@@ -40,6 +46,7 @@ variable "upgrade" {
     max_surge       = number
     max_unavailable = number
   })
+  nullable = false
   default = {
     auto            = true
     max_surge       = 1
@@ -54,6 +61,7 @@ variable "autoscaling" {
     min_node_count = number
     max_node_count = number
   })
+  nullable = false
   default = {
     enabled        = true
     min_node_count = 1
@@ -75,6 +83,7 @@ variable "nodes" {
     tags          = list(string)
     labels        = map(string)
   })
+  nullable = false
   default = {
     spot          = false
     preemptible   = false
@@ -96,18 +105,27 @@ variable "node_taints" {
     value  = string
     effect = string
   }))
+  nullable = false
   default = []
 }
 
+# ==================================================< SSH >==================================================
+
 variable "ssh" {
-  description = "SSH configurations for the nodes in the node pool."
+  description = "An object containing information required for enabling SSH access to node pool."
   type = object({
-    path                       = string
+    node_pool_public_key_file = string
+  })
+  default = null
+}
+
+variable "ssh_config_file" {
+  description = "An object containing information required for writting the SSH config file."
+  type = object({
     bastion_address            = string
     bastion_private_key_file   = string
     node_pool_cidr             = string
     node_pool_private_key_file = string
-    node_pool_public_key_file  = string
   })
   default = null
 }
@@ -121,6 +139,7 @@ variable "timeouts" {
     update = string
     delete = string
   })
+  nullable = false
   default = {
     create = "30m"
     update = "30m"
