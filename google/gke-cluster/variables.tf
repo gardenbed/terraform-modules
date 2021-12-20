@@ -4,16 +4,19 @@
 variable "name" {
   description = "A human-readable name for the cluster resources."
   type        = string
+  nullable    = false
 }
 
 variable "project" {
   description = "A Google Cloud project to manage cluster resources in."
   type        = string
+  nullable    = false
 }
 
 variable "region" {
   description = "A Google Cloud region to manage cluster resources in."
   type        = string
+  nullable    = false
 }
 
 # ==================================================< CLUSTER >==================================================
@@ -21,12 +24,14 @@ variable "region" {
 variable "public_cluster" {
   description = "Determines if the cluser is public or private."
   type        = bool
+  nullable    = false
   default     = false
 }
 
 variable "release_channel" {
   description = "The GKE release channel for Kubernetes version."
   type        = string
+  nullable    = false
   default     = "STABLE"
 
   validation {
@@ -42,10 +47,11 @@ variable "network" {
   type = object({
     id = string
   })
+  nullable = false
 }
 
 variable "public_subnetwork" {
-  description = "The VPC public subnetwork information."
+  description = "The VPC public subnetwork information. This has to be specified if public_cluster is true."
   type = object({
     id           = string
     primary_cidr = string
@@ -53,7 +59,7 @@ variable "public_subnetwork" {
 }
 
 variable "private_subnetwork" {
-  description = "The VPC private subnetwork information."
+  description = "The VPC private subnetwork information. This has to be specified if public_cluster is false."
   type = object({
     id           = string
     primary_cidr = string
@@ -75,13 +81,14 @@ variable "services_secondary_range_name" {
 variable "enable_network_policy" {
   description = "Whether or not to enable the network policy to control traffic flow at the IP address or port level (L3/L4)."
   type        = bool
+  nullable    = false
   default     = false
 }
 
 # ==================================================< AUTOSCALING >==================================================
 
 variable "cluster_autoscaling" {
-  description = "The configurations for cluster autoscaling which automatically adjust the size of the cluster and node pools"
+  description = "The configurations for cluster autoscaling which automatically adjust the size of the cluster and node pools."
   type = object({
     enabled       = bool
     min_cpu_m     = number
@@ -89,6 +96,7 @@ variable "cluster_autoscaling" {
     min_memory_mi = number
     max_memory_mi = number
   })
+  nullable = false
   default = {
     enabled       = true
     min_cpu_m     = 250
@@ -101,12 +109,14 @@ variable "cluster_autoscaling" {
 variable "enable_vertical_pod_autoscaling" {
   description = "Whether or not to enable vertical pod autoscaling which automatically adjusts the resources for pods."
   type        = bool
+  nullable    = false
   default     = true
 }
 
 variable "enable_horizontal_pod_autoscaling" {
   description = "Whether or not to enable horizontal pod autoscaling which increases or decreases the number of replicas."
   type        = bool
+  nullable    = false
   default     = true
 }
 
@@ -115,12 +125,14 @@ variable "enable_horizontal_pod_autoscaling" {
 variable "enable_stackdriver_logging" {
   description = "Whether or not to enable the Stackdriver Kubernetes Engine Logging."
   type        = bool
+  nullable    = false
   default     = true
 }
 
 variable "enable_stackdriver_monitoring" {
   description = "Whether or not to enable the Stackdriver Kubernetes Engine Monitoring."
   type        = bool
+  nullable    = false
   default     = true
 }
 
@@ -142,6 +154,7 @@ variable "timeouts" {
     update = string
     delete = string
   })
+  nullable = false
   default = {
     create = "30m"
     read   = "30m"
@@ -155,7 +168,7 @@ variable "timeouts" {
 variable "cluster_labels" {
   description = "A map of labels for the cluster resources."
   type        = map(string)
-  default     = {}
+  default     = null
 }
 
 # ==================================================< MISC >==================================================
@@ -163,5 +176,6 @@ variable "cluster_labels" {
 variable "kubeconfig_path" {
   description = "The path for writing the cluster kubeconfig file."
   type        = string
+  nullable    = false
   default     = "."
 }
