@@ -43,10 +43,8 @@ resource "aws_eks_node_group" "node_group" {
   # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_node_group#remote_access-configuration-block
   remote_access {
     ec2_ssh_key               = aws_key_pair.node_group.key_name
-    source_security_group_ids = [ var.bastion.security_group_id ]
+    source_security_group_ids = [ var.ssh.bastion_security_group_id ]
   }
-
-  labels = merge(var.labels, {})
 
   # https://www.terraform.io/docs/language/expressions/dynamic-blocks.html
   # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_node_group#taint-configuration-block
@@ -66,6 +64,8 @@ resource "aws_eks_node_group" "node_group" {
     delete = var.profile.delete_timeout
   }
 
+  labels = merge(var.labels, {})
+
   tags = merge(var.common_tags, {
     Name = format("%s-node-group", var.name)
   })
@@ -81,7 +81,7 @@ resource "aws_eks_node_group" "node_group" {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair
 resource "aws_key_pair" "node_group" {
   key_name   = "${var.name}-node-group"
-  public_key = file(var.ssh.public_key_file)
+  public_key = file(var.ssh.node_group_public_key_file)
 
   tags = merge(var.common_tags, {
     Name = format("%s-node-group", var.name)

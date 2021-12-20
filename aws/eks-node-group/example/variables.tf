@@ -16,7 +16,7 @@ variable "name" {
   type = string
 }
 
-variable "ssh_path" {
+variable "bastion_public_key_file" {
   type = string
 }
 
@@ -24,14 +24,10 @@ variable "bastion_private_key_file" {
   type = string
 }
 
-variable "bastion_public_key_file" {
+variable "node_group_public_key_file" {
   type = string
 }
 
 variable "node_group_private_key_file" {
-  type = string
-}
-
-variable "node_group_public_key_file" {
   type = string
 }
