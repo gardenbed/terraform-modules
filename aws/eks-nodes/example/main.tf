@@ -33,11 +33,11 @@ module "cluster" {
 module "bastion" {
   source = "../../bastion"
 
-  name            = var.name
-  region          = var.region
-  vpc             = module.network.vpc
-  public_subnets  = module.network.public_subnets
-  public_key_file = var.bastion_public_key_file
+  name                = var.name
+  region              = var.region
+  vpc                 = module.network.vpc
+  public_subnets      = module.network.public_subnets
+  ssh_public_key_file = var.bastion_public_key_file
 }
 
 module "nodes" {
@@ -48,16 +48,15 @@ module "nodes" {
   cluster_additional_security_group_id = module.cluster.additional_security_group_ids[0]
   subnet_cidrs                         = [for subnet in module.network.private_subnets : subnet.cidr]
 
-  bastion = {
-    security_group_id = module.bastion.security_group_id
-    dns_name          = module.bastion.load_balancer_dns_name
-    private_key_file  = var.bastion_private_key_file
+  ssh = {
+    bastion_security_group_id = module.bastion.security_group_id
+    nodes_public_key_file     = var.nodes_public_key_file
   }
 
-  ssh = {
-    path             = var.ssh_path
-    private_key_file = var.nodes_private_key_file
-    public_key_file  = var.nodes_public_key_file
+  ssh_config_file = {
+    bastion_address          = module.bastion.load_balancer_dns_name
+    bastion_private_key_file = var.bastion_private_key_file
+    nodes_private_key_file   = var.nodes_private_key_file
   }
 }
 

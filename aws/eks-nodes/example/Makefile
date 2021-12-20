@@ -1,23 +1,23 @@
 ssh_path := ssh
-bastion_key := $(ssh_path)/bastion
-nodes_key := $(ssh_path)/nodes
+bastion_key_file := $(ssh_path)/bastion
+nodes_key_file := $(ssh_path)/nodes
 
 
 terraform.tfvars:
 	@ echo 'access_key = "tbd"' >> terraform.tfvars
 	@ echo 'secret_key = "tbd"' >> terraform.tfvars
 	@ echo 'region     = "tbd"' >> terraform.tfvars
-	@ echo 'name       = "tbd"' >> terraform.tfvars
+	@ echo 'name       = "eks-nodes-example"' >> terraform.tfvars
 
 .PHONY: keys
 keys:
 	@ mkdir -p $(ssh_path)
-	@ ssh-keygen -f $(bastion_key) -t rsa -N '' 1> /dev/null && \
-	  chmod 400 $(bastion_key) && \
-	  mv $(bastion_key) $(bastion_key).pem
-	@ ssh-keygen -f $(nodes_key) -t rsa -N '' 1> /dev/null && \
-	  chmod 400 $(nodes_key) && \
-	  mv $(nodes_key) $(nodes_key).pem
+	@ ssh-keygen -f $(bastion_key_file) -t rsa -N '' 1> /dev/null && \
+	  chmod 400 $(bastion_key_file) && \
+	  mv $(bastion_key_file) $(bastion_key_file).pem
+	@ ssh-keygen -f $(nodes_key_file) -t rsa -N '' 1> /dev/null && \
+	  chmod 400 $(nodes_key_file) && \
+	  mv $(nodes_key_file) $(nodes_key_file).pem
 
 .PHONY: init
 init:
@@ -34,38 +34,34 @@ validate:
 .PHONY: plan
 plan:
 	@ terraform plan \
-	    -var ssh_path=$(ssh_path) \
-	    -var bastion_private_key_file=$(bastion_key).pem \
-	    -var bastion_public_key_file=$(bastion_key).pub \
-	    -var nodes_private_key_file=$(nodes_key).pem \
-	    -var nodes_public_key_file=$(nodes_key).pub
+	    -var bastion_public_key_file=$(bastion_key_file).pub \
+	    -var bastion_private_key_file=$(bastion_key_file).pem \
+	    -var nodes_public_key_file=$(nodes_key_file).pub \
+	    -var nodes_private_key_file=$(nodes_key_file).pem
 
 .PHONY: apply
 apply:
 	@ terraform apply \
-	    -var ssh_path=$(ssh_path) \
-	    -var bastion_private_key_file=$(bastion_key).pem \
-	    -var bastion_public_key_file=$(bastion_key).pub \
-	    -var nodes_private_key_file=$(nodes_key).pem \
-	    -var nodes_public_key_file=$(nodes_key).pub
+	    -var bastion_public_key_file=$(bastion_key_file).pub \
+	    -var bastion_private_key_file=$(bastion_key_file).pem \
+	    -var nodes_public_key_file=$(nodes_key_file).pub \
+	    -var nodes_private_key_file=$(nodes_key_file).pem
 
 .PHONY: refresh
 refresh:
 	@ terraform refresh \
-	    -var ssh_path=$(ssh_path) \
-	    -var bastion_private_key_file=$(bastion_key).pem \
-	    -var bastion_public_key_file=$(bastion_key).pub \
-	    -var nodes_private_key_file=$(nodes_key).pem \
-	    -var nodes_public_key_file=$(nodes_key).pub
+	    -var bastion_public_key_file=$(bastion_key_file).pub \
+	    -var bastion_private_key_file=$(bastion_key_file).pem \
+	    -var nodes_public_key_file=$(nodes_key_file).pub \
+	    -var nodes_private_key_file=$(nodes_key_file).pem
 
 .PHONY: destroy
 destroy:
 	@ terraform destroy \
-	    -var ssh_path=$(ssh_path) \
-	    -var bastion_private_key_file=$(bastion_key).pem \
-	    -var bastion_public_key_file=$(bastion_key).pub \
-	    -var nodes_private_key_file=$(nodes_key).pem \
-	    -var nodes_public_key_file=$(nodes_key).pub
+	    -var bastion_public_key_file=$(bastion_key_file).pub \
+	    -var bastion_private_key_file=$(bastion_key_file).pem \
+	    -var nodes_public_key_file=$(nodes_key_file).pub \
+	    -var nodes_private_key_file=$(nodes_key_file).pem
 
 .PHONY: clean
 clean:

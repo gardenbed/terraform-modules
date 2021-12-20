@@ -113,7 +113,7 @@ resource "aws_launch_template" "nodes" {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair
 resource "aws_key_pair" "nodes" {
   key_name   = "${var.name}-nodes"
-  public_key = file(var.ssh.public_key_file)
+  public_key = file(var.ssh.nodes_public_key_file)
 
   tags = merge(var.common_tags, {
     Name = format("%s-nodes", var.name)
@@ -252,7 +252,7 @@ resource "aws_security_group_rule" "nodes_ingress_ssh_bastion" {
   from_port                = 22
   to_port                  = 22
   security_group_id        = aws_security_group.nodes.id
-  source_security_group_id = var.bastion.security_group_id
+  source_security_group_id = var.ssh.bastion_security_group_id
   description              = "Allow SSH access from bastion hosts."
 }
 
