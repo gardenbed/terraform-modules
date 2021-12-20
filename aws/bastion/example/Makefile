@@ -1,19 +1,19 @@
 ssh_path := ssh
-key_name := $(ssh_path)/bastion
+key_file := $(ssh_path)/bastion
 
 
 terraform.tfvars:
 	@ echo 'access_key = "tbd"' >> terraform.tfvars
 	@ echo 'secret_key = "tbd"' >> terraform.tfvars
 	@ echo 'region     = "tbd"' >> terraform.tfvars
-	@ echo 'name       = "tbd"' >> terraform.tfvars
+	@ echo 'name       = "bastion-example"' >> terraform.tfvars
 
 .PHONY: keys
 keys:
 	@ mkdir -p $(ssh_path)
-	@ ssh-keygen -f $(key_name) -t rsa -N '' 1> /dev/null && \
-	  chmod 400 $(key_name) && \
-	  mv $(key_name) $(key_name).pem
+	@ ssh-keygen -f $(key_file) -t rsa -N '' 1> /dev/null && \
+	  chmod 400 $(key_file) && \
+	  mv $(key_file) $(key_file).pem
 
 .PHONY: init
 init:
@@ -30,30 +30,26 @@ validate:
 .PHONY: plan
 plan:
 	@ terraform plan \
-	    -var ssh_path=$(ssh_path) \
-	    -var private_key_file=$(key_name).pem \
-	    -var public_key_file=$(key_name).pub
+	    -var ssh_public_key_file=$(key_file).pub \
+	    -var ssh_private_key_file=$(key_file).pem
 
 .PHONY: apply
 apply:
 	@ terraform apply \
-	    -var ssh_path=$(ssh_path) \
-	    -var private_key_file=$(key_name).pem \
-	    -var public_key_file=$(key_name).pub
+	    -var ssh_public_key_file=$(key_file).pub \
+	    -var ssh_private_key_file=$(key_file).pem
 
 .PHONY: refresh
 refresh:
 	@ terraform refresh \
-	    -var ssh_path=$(ssh_path) \
-	    -var private_key_file=$(key_name).pem \
-	    -var public_key_file=$(key_name).pub
+	    -var ssh_public_key_file=$(key_file).pub \
+	    -var ssh_private_key_file=$(key_file).pem
 
 .PHONY: destroy
 destroy:
 	@ terraform destroy \
-	    -var ssh_path=$(ssh_path) \
-	    -var private_key_file=$(key_name).pem \
-	    -var public_key_file=$(key_name).pub
+	    -var ssh_public_key_file=$(key_file).pub \
+	    -var ssh_private_key_file=$(key_file).pem
 
 .PHONY: clean
 clean:
