@@ -13,7 +13,7 @@ region     = "tbd"
 You can run the tests using the standard `go test` command.
 The only important thing is setting the `timeout` long enough, so Terraform resources can be provisioned and destroyed successfully.
 
-    go test -timeout=30m ./aws
+    go test -v -timeout=60m ./aws
 
 ## Google
 
@@ -27,7 +27,7 @@ region  = "tbd"
 You can run the tests using the standard `go test` command.
 The only important thing is setting the `timeout` long enough, so Terraform resources can be provisioned and destroyed successfully.
 
-    go test -timeout=30m ./google
+    go test -v -timeout=60m ./google
 
 ## Resources
 

@@ -106,7 +106,7 @@ resource "aws_eip" "bastion" {
   vpc = true
 
   tags = merge(var.common_tags, {
-    Name = format("%s-bastion", var.name)
+    Name = format("%s-bastion-%d", var.name, count.index + 1)
   })
 
   lifecycle {
