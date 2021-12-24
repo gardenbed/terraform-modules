@@ -8,9 +8,10 @@ provider "aws" {
 module "network" {
   source = "../../network"
 
-  name     = var.name
-  region   = var.region
-  az_count = 3
+  name                   = var.name
+  region                 = var.region
+  az_count               = 3
+  enable_private_subnets = false
 }
 
 module "bastion" {

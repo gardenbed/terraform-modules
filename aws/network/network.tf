@@ -119,7 +119,7 @@ resource "aws_eip" "nat" {
   vpc = true
 
   tags = merge(var.common_tags, {
-    Name   = format("%s-%d", var.name, count.index + 1)
+    Name   = format("%s-nat-%d", var.name, count.index + 1)
     Region = var.region
   })
 
