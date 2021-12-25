@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gruntwork-io/terratest/modules/k8s"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/retry"
 	"github.com/gruntwork-io/terratest/modules/ssh"
@@ -79,7 +80,7 @@ func TestTerraform_AWS_Bastion(t *testing.T) {
 		assert.NotEmpty(t, terraform.Output(t, opts, "ssh_config_file"))
 	})
 
-	t.Run("TestConnection", func(t *testing.T) {
+	t.Run("TestSSH", func(t *testing.T) {
 		address := terraform.Output(t, opts, "load_balancer_dns_name")
 		host := ssh.Host{
 			Hostname:    address,
@@ -104,6 +105,150 @@ func TestTerraform_AWS_Bastion(t *testing.T) {
 			logger.Log(t, "Instance ID:", instanceID)
 
 			return instanceID, nil
+		})
+	})
+}
+
+func TestTerraform_AWS_EKS_Node_Group(t *testing.T) {
+	t.Parallel()
+
+	logger.Log(t, "Running tests for aws/eks-node-group module ...")
+
+	logger.Log(t, "Generating SSH keys for bastion hosts ...")
+	bastionKeypair, err := test.CreateSSHKeyPair(t, "bastion")
+	assert.NoError(t, err)
+	defer bastionKeypair.Clean()
+
+	logger.Log(t, "Generating SSH keys for node group ...")
+	nodeKeypair, err := test.CreateSSHKeyPair(t, "node-group")
+	assert.NoError(t, err)
+	defer nodeKeypair.Clean()
+
+	opts := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
+		TerraformDir: "../../aws/eks-node-group/example",
+
+		// The var file paths to pass to Terraform commands using -var-file option
+		VarFiles: []string{
+			getVarFile(t),
+		},
+
+		// The variables to pass to Terraform commands using the -var option
+		Vars: map[string]interface{}{
+			"name":                        "eks-node-group-test",
+			"kubeconfig_path":             getCurrentDir(t),
+			"bastion_public_key_file":     bastionKeypair.PublicFile,
+			"bastion_private_key_file":    bastionKeypair.PrivateFile,
+			"node_group_public_key_file":  nodeKeypair.PublicFile,
+			"node_group_private_key_file": nodeKeypair.PrivateFile,
+		},
+	})
+
+	defer terraform.Destroy(t, opts)
+	terraform.InitAndApply(t, opts)
+
+	t.Run("VerifyOutputs", func(t *testing.T) {
+		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_name"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_version"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_status"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_endpoint"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_oidc_url"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "node_group_name"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "node_group_status"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "kubeconfig_file"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "ssh_config_file"))
+	})
+
+	t.Run("TestConnection", func(t *testing.T) {
+		clusterName := terraform.Output(t, opts, "cluster_name")
+		kubeconfigFile := terraform.Output(t, opts, "kubeconfig_file")
+		opts := k8s.NewKubectlOptions(clusterName, kubeconfigFile, "default")
+
+		retryCount := 30
+		retryPeriod := 10 * time.Second
+		description := fmt.Sprintf("Connecting to EKS cluster %s", clusterName)
+
+		retry.DoWithRetry(t, description, retryCount, retryPeriod, func() (string, error) {
+			nodes, err := k8s.GetNodesE(t, opts)
+			if err != nil {
+				return "", err
+			}
+
+			for _, node := range nodes {
+				logger.Log(t, "Node name:", node.Name)
+			}
+
+			return "OK", nil
+		})
+	})
+}
+
+func TestTerraform_AWS_EKS_Nodes(t *testing.T) {
+	t.Parallel()
+
+	logger.Log(t, "Running tests for aws/eks-nodes module ...")
+
+	logger.Log(t, "Generating SSH keys for bastion hosts ...")
+	bastionKeypair, err := test.CreateSSHKeyPair(t, "bastion")
+	assert.NoError(t, err)
+	defer bastionKeypair.Clean()
+
+	logger.Log(t, "Generating SSH keys for nodes ...")
+	nodeKeypair, err := test.CreateSSHKeyPair(t, "nodes")
+	assert.NoError(t, err)
+	defer nodeKeypair.Clean()
+
+	opts := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
+		TerraformDir: "../../aws/eks-nodes/example",
+
+		// The var file paths to pass to Terraform commands using -var-file option
+		VarFiles: []string{
+			getVarFile(t),
+		},
+
+		// The variables to pass to Terraform commands using the -var option
+		Vars: map[string]interface{}{
+			"name":                     "eks-nodes-test",
+			"kubeconfig_path":          getCurrentDir(t),
+			"bastion_public_key_file":  bastionKeypair.PublicFile,
+			"bastion_private_key_file": bastionKeypair.PrivateFile,
+			"nodes_public_key_file":    nodeKeypair.PublicFile,
+			"nodes_private_key_file":   nodeKeypair.PrivateFile,
+		},
+	})
+
+	defer terraform.Destroy(t, opts)
+	terraform.InitAndApply(t, opts)
+
+	t.Run("VerifyOutputs", func(t *testing.T) {
+		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_name"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_version"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_status"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_endpoint"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_oidc_url"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "kubeconfig_file"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "ssh_config_file"))
+	})
+
+	t.Run("TestConnection", func(t *testing.T) {
+		clusterName := terraform.Output(t, opts, "cluster_name")
+		kubeconfigFile := terraform.Output(t, opts, "kubeconfig_file")
+		opts := k8s.NewKubectlOptions(clusterName, kubeconfigFile, "default")
+
+		retryCount := 30
+		retryPeriod := 10 * time.Second
+		description := fmt.Sprintf("Connecting to EKS cluster %s", clusterName)
+
+		retry.DoWithRetry(t, description, retryCount, retryPeriod, func() (string, error) {
+			nodes, err := k8s.GetNodesE(t, opts)
+			if err != nil {
+				return "", err
+			}
+
+			for _, node := range nodes {
+				logger.Log(t, "Node name:", node.Name)
+			}
+
+			return "OK", nil
 		})
 	})
 }

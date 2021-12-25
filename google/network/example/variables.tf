@@ -1,5 +1,6 @@
 variable "credentials_file" {
-  type = string
+  type    = string
+  default = "../../account.json"
 }
 
 variable "name" {

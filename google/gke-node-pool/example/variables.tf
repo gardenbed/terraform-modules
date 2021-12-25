@@ -1,5 +1,6 @@
 variable "credentials_file" {
-  type = string
+  type    = string
+  default = "../../account.json"
 }
 
 variable "name" {
@@ -12,6 +13,11 @@ variable "project" {
 
 variable "region" {
   type = string
+}
+
+variable "kubeconfig_path" {
+  type    = string
+  default = "."
 }
 
 variable "bastion_private_key_file" {

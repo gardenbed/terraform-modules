@@ -45,6 +45,7 @@ module "cluster" {
   public_subnetwork  = module.network.public_subnetwork
   private_subnetwork = module.network.private_subnetwork
   public_cluster     = true
+  kubeconfig_path    = var.kubeconfig_path
 }
 
 module "node_pool" {

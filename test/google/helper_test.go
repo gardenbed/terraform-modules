@@ -1,6 +1,7 @@
 package google
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -11,6 +12,13 @@ const (
 	googleVarFile         = "terraform.tfvars"
 	googleCredentialsFile = "account.json"
 )
+
+func getCurrentDir(t *testing.T) string {
+	dir, err := os.Getwd()
+	assert.NoError(t, err)
+
+	return dir
+}
 
 func getVarFile(t *testing.T) string {
 	file, err := filepath.Abs(googleVarFile)

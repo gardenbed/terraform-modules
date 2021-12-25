@@ -36,3 +36,7 @@ output "client_key" {
 output "service_account_email" {
   value = module.cluster.service_account_email
 }
+
+output "kubeconfig_file" {
+  value = module.cluster.kubeconfig_file
+}
