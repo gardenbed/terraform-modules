@@ -2,7 +2,7 @@
 resource "local_file" "kubeconfig" {
   count = var.public_cluster ? 1 : 0
 
-  filename             = "${var.kubeconfig_path}/kubeconfig-${var.name}"
+  filename             = "${abspath(var.kubeconfig_path)}/kubeconfig-${var.name}"
   content              = data.template_file.kubeconfig.0.rendered
   file_permission      = "0600"
   directory_permission = "0755"

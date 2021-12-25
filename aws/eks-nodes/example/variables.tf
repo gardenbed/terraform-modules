@@ -16,6 +16,11 @@ variable "name" {
   type = string
 }
 
+variable "kubeconfig_path" {
+  type    = string
+  default = "."
+}
+
 variable "bastion_public_key_file" {
   type = string
 }

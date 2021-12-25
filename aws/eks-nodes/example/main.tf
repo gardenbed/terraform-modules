@@ -23,11 +23,11 @@ module "network" {
 module "cluster" {
   source = "../../eks-cluster"
 
-  name                            = var.name
-  region                          = var.region
-  vpc_id                          = module.network.vpc.id
-  subnet_ids                      = [for subnet in module.network.private_subnets : subnet.id]
-  enable_iam_role_service_account = true
+  name            = var.name
+  region          = var.region
+  vpc_id          = module.network.vpc.id
+  subnet_ids      = module.network.private_subnets.*.id
+  kubeconfig_path = var.kubeconfig_path
 }
 
 module "bastion" {
@@ -36,7 +36,7 @@ module "bastion" {
   name                = var.name
   region              = var.region
   vpc                 = module.network.vpc
-  public_subnets      = module.network.public_subnets
+  public_subnets      = slice(module.network.public_subnets, 0, 2)
   ssh_public_key_file = var.bastion_public_key_file
 }
 
@@ -46,7 +46,7 @@ module "nodes" {
   name                                 = var.name
   cluster_name                         = module.cluster.name
   cluster_additional_security_group_id = module.cluster.additional_security_group_ids[0]
-  subnet_cidrs                         = [for subnet in module.network.private_subnets : subnet.cidr]
+  subnet_cidrs                         = module.network.private_subnets.*.cidr
 
   ssh = {
     bastion_security_group_id = module.bastion.security_group_id

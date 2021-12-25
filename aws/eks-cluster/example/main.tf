@@ -16,9 +16,9 @@ module "network" {
 module "cluster" {
   source = "../"
 
-  name                            = var.name
-  region                          = var.region
-  vpc_id                          = module.network.vpc.id
-  subnet_ids                      = [for subnet in module.network.private_subnets : subnet.id]
-  enable_iam_role_service_account = true
+  name            = var.name
+  region          = var.region
+  vpc_id          = module.network.vpc.id
+  subnet_ids      = module.network.private_subnets.*.id
+  kubeconfig_path = var.kubeconfig_path
 }

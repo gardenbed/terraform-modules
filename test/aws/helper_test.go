@@ -1,6 +1,7 @@
 package aws
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -10,6 +11,13 @@ import (
 const (
 	awsVarFile = "terraform.tfvars"
 )
+
+func getCurrentDir(t *testing.T) string {
+	dir, err := os.Getwd()
+	assert.NoError(t, err)
+
+	return dir
+}
 
 func getVarFile(t *testing.T) string {
 	file, err := filepath.Abs(awsVarFile)

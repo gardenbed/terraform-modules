@@ -40,3 +40,11 @@ output "cluster_service_account_email" {
 output "node_pool_id" {
   value = module.node_pool.id
 }
+
+output "kubeconfig_file" {
+  value = module.cluster.kubeconfig_file
+}
+
+output "ssh_config_file" {
+  value = module.node_pool.ssh_config_file
+}

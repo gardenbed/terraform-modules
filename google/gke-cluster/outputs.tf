@@ -45,3 +45,8 @@ output "service_account_email" {
   description = "The service account email for the cluster."
   value       = google_service_account.cluster.email
 }
+
+output "kubeconfig_file" {
+  description = "The path to kubectl config file for the cluster."
+  value       = var.public_cluster ? local_file.kubeconfig.0.filename : null
+}
