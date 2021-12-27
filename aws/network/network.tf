@@ -1,3 +1,4 @@
+# https://www.terraform.io/docs/language/meta-arguments/lifecycle.html#create_before_destroy
 # https://www.terraform.io/docs/language/meta-arguments/lifecycle.html#ignore_changes
 #   We ignore changes to tags since they can take new values on each run (terraform plan/apply).
 #   These updates are based on semantic rules managed outside of the Terraform scope.
@@ -149,7 +150,7 @@ resource "aws_route_table" "public" {
 
   route {
     ipv6_cidr_block = "::/0"
-    gateway_id = aws_internet_gateway.main.0.id
+    gateway_id      = aws_internet_gateway.main.0.id
   }
 
   tags = merge(var.common_tags, {
@@ -177,7 +178,7 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block     = "0.0.0.0/0"
     nat_gateway_id = element(aws_nat_gateway.main.*.id, count.index)
   }
 
@@ -198,4 +199,61 @@ resource "aws_route_table_association" "private" {
 
   subnet_id      = element(aws_subnet.private.*.id, count.index)
   route_table_id = element(aws_route_table.private.*.id, count.index)
+}
+
+# ====================================================================================================
+#  SECURITY GROUP
+# ====================================================================================================
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group
+resource "aws_security_group" "main" {
+  name   = "${var.name}"
+  vpc_id = aws_vpc.main.id
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group#ingress
+
+  ingress {
+    protocol    = "icmp"
+    to_port     = -1
+    from_port   = -1
+    cidr_blocks = [ aws_vpc.main.cidr_block ]
+    description = "Allow ICMP traffic inside the VPC."
+  }
+
+  ingress {
+    protocol    = "all"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = [ aws_vpc.main.cidr_block ]
+    description = "Allow all incoming traffic inside the VPC."
+  }
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group#egress
+
+  egress {
+    protocol    = "all"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = [ aws_vpc.main.cidr_block ]
+    description = "Allow all outgoing traffic inside the VPC."
+  }
+
+  egress {
+    protocol    = "all"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = var.outgoing_cidrs
+    description = "Allow all outgoing traffic."
+  }
+
+  tags = merge(var.common_tags, {
+    Name = var.name
+  })
+
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes = [
+      tags,
+    ]
+  }
 }
