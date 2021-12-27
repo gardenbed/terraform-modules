@@ -47,6 +47,13 @@ variable "machine_type" {
   default     = "e2-micro"
 }
 
+variable "size" {
+  description = "The number of bastion instances."
+  type        = number
+  nullable    = false
+  default     = 1
+}
+
 # ==================================================< OS LOGINS >==================================================
 
 variable "enable_os_login" {
