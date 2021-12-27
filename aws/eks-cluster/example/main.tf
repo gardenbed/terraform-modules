@@ -16,9 +16,10 @@ module "network" {
 module "cluster" {
   source = "../"
 
-  name            = var.name
-  region          = var.region
-  vpc_id          = module.network.vpc.id
-  subnet_ids      = module.network.private_subnets.*.id
-  kubeconfig_path = var.kubeconfig_path
+  name               = var.name
+  region             = var.region
+  public_cluster     = true
+  vpc_id             = module.network.vpc.id
+  private_subnet_ids = module.network.private_subnets.*.id
+  kubeconfig_path    = var.kubeconfig_path
 }

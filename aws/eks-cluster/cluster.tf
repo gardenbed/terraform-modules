@@ -26,12 +26,12 @@ resource "aws_eks_cluster" "cluster" {
 
   # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_cluster#vpc_config-arguments
   vpc_config {
-    subnet_ids         = var.subnet_ids
+    subnet_ids         = var.private_subnet_ids
     security_group_ids = [ aws_security_group.cluster.id ]
 
-    endpoint_private_access = false # Amazon EKS private API server endpoint is disabled
-    endpoint_public_access  = true  # Amazon EKS public API server endpoint is enabled.
-    public_access_cidrs     = var.public_api_cidrs
+    endpoint_private_access = !var.public_cluster
+    endpoint_public_access  = var.public_cluster
+    public_access_cidrs     = var.public_access_cidrs
   }
 
   kubernetes_network_config {
@@ -152,5 +152,5 @@ resource "aws_security_group_rule" "cluster_egress_all_internet" {
   to_port           = 0
   security_group_id = aws_security_group.cluster.id
   cidr_blocks       = var.cluster_egress_cidrs
-  description       = "Allow cluster outbound access to the Internet."
+  description       = "Allow cluster outbound access."
 }
