@@ -20,7 +20,7 @@ module "bastion" {
   name                = var.name
   region              = var.region
   vpc                 = module.network.vpc
-  public_subnets      = module.network.public_subnets
+  public_subnets      = slice(module.network.public_subnets, 0, 2)
   ssh_public_key_file = var.ssh_public_key_file
   ssh_config_file = {
     private_key_file = var.ssh_private_key_file

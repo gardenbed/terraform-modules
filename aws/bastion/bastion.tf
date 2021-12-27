@@ -101,7 +101,7 @@ resource "aws_lb" "bastion" {
 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html
 # https://docs.aws.amazon.com/elasticloadbalancing/latest/network/network-load-balancers.html#availability-zones
 resource "aws_eip" "bastion" {
-  count = length(var.public_subnets)
+  count = local.size
 
   vpc = true
 
@@ -123,9 +123,9 @@ resource "aws_eip" "bastion" {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group
 resource "aws_autoscaling_group" "bastion" {
   name                 = "${var.name}-bastion"
-  min_size             = 1
-  desired_capacity     = 1
-  max_size             = 1
+  min_size             = local.size
+  desired_capacity     = local.size
+  max_size             = local.size
   vpc_zone_identifier  = var.public_subnets.*.id
   target_group_arns    = [ aws_lb_target_group.bastion.arn ]
 
@@ -307,22 +307,6 @@ resource "aws_security_group" "bastion" {
   # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group#ingress
 
   ingress {
-    protocol    = "icmp"
-    to_port     = -1
-    from_port   = -1
-    cidr_blocks = [ var.vpc.cidr ]
-    description = "Allow ICMP traffic inside the VPC."
-  }
-
-  ingress {
-    protocol    = "all"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = [ var.vpc.cidr ]
-    description = "Allow all incoming traffic inside the VPC."
-  }
-
-  ingress {
     protocol    = "tcp"
     from_port   = 22
     to_port     = 22
@@ -337,24 +321,6 @@ resource "aws_security_group" "bastion" {
     to_port         = 22
     cidr_blocks     = var.public_subnets.*.cidr
     description     = "Allow load balancer access for healthchecks."
-  }
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group#egress
-
-  egress {
-    protocol    = "all"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = [ var.vpc.cidr ]
-    description = "Allow all outgoing traffic inside the VPC."
-  }
-
-  egress {
-    protocol    = "all"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = [ "0.0.0.0/0" ]
-    description = "Allow all outgoing traffic to the Internet."
   }
 
   tags = merge(var.common_tags, {
