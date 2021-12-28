@@ -154,11 +154,63 @@ func TestTerraform_AWS_EKS_Node_Group(t *testing.T) {
 		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_oidc_url"))
 		assert.NotEmpty(t, terraform.Output(t, opts, "node_group_name"))
 		assert.NotEmpty(t, terraform.Output(t, opts, "node_group_status"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "bastion_address"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "node_group_instances"))
 		assert.NotEmpty(t, terraform.Output(t, opts, "kubeconfig_file"))
 		assert.NotEmpty(t, terraform.Output(t, opts, "ssh_config_file"))
 	})
 
-	t.Run("TestConnection", func(t *testing.T) {
+	t.Run("TestNodeSSH", func(t *testing.T) {
+		bastionAddr := terraform.Output(t, opts, "bastion_address")
+
+		instances := terraform.OutputListOfObjects(t, opts, "node_group_instances")
+		if len(instances) == 0 {
+			t.FailNow()
+		}
+
+		privateIP, exist := instances[0]["private_ip"]
+		if !exist {
+			t.FailNow()
+		}
+
+		nodeAddr, ok := privateIP.(string)
+		if !ok {
+			t.FailNow()
+		}
+
+		publicHost := ssh.Host{
+			Hostname:    bastionAddr,
+			SshKeyPair:  bastionKeypair.KeyPair,
+			SshUserName: "admin",
+		}
+
+		privateHost := ssh.Host{
+			Hostname:    nodeAddr,
+			SshKeyPair:  nodeKeypair.KeyPair,
+			SshUserName: "ec2-user",
+		}
+
+		retryCount := 30
+		retryPeriod := 10 * time.Second
+		description := fmt.Sprintf("SSH to node %s via bastion host %s", nodeAddr, bastionAddr)
+
+		retry.DoWithRetry(t, description, retryCount, retryPeriod, func() (string, error) {
+			instanceID, err := ssh.CheckPrivateSshConnectionE(t, publicHost, privateHost, `curl -s http://169.254.169.254/latest/meta-data/instance-id`)
+			if err != nil {
+				return "", err
+			}
+
+			if instanceID == "" {
+				return "", errors.New("unexpected instance id for node")
+			}
+
+			logger.Log(t, "Node instance ID:", instanceID)
+
+			return "OK", nil
+		})
+	})
+
+	t.Run("TestClusterConnection", func(t *testing.T) {
 		clusterName := terraform.Output(t, opts, "cluster_name")
 		kubeconfigFile := terraform.Output(t, opts, "kubeconfig_file")
 		opts := k8s.NewKubectlOptions(clusterName, kubeconfigFile, "default")
@@ -225,11 +277,63 @@ func TestTerraform_AWS_EKS_Nodes(t *testing.T) {
 		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_status"))
 		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_endpoint"))
 		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_oidc_url"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "bastion_address"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "node_instances"))
 		assert.NotEmpty(t, terraform.Output(t, opts, "kubeconfig_file"))
 		assert.NotEmpty(t, terraform.Output(t, opts, "ssh_config_file"))
 	})
 
-	t.Run("TestConnection", func(t *testing.T) {
+	t.Run("TestNodeSSH", func(t *testing.T) {
+		bastionAddr := terraform.Output(t, opts, "bastion_address")
+
+		instances := terraform.OutputListOfObjects(t, opts, "node_instances")
+		if len(instances) == 0 {
+			t.FailNow()
+		}
+
+		privateIP, exist := instances[0]["private_ip"]
+		if !exist {
+			t.FailNow()
+		}
+
+		nodeAddr, ok := privateIP.(string)
+		if !ok {
+			t.FailNow()
+		}
+
+		publicHost := ssh.Host{
+			Hostname:    bastionAddr,
+			SshKeyPair:  bastionKeypair.KeyPair,
+			SshUserName: "admin",
+		}
+
+		privateHost := ssh.Host{
+			Hostname:    nodeAddr,
+			SshKeyPair:  nodeKeypair.KeyPair,
+			SshUserName: "ec2-user",
+		}
+
+		retryCount := 30
+		retryPeriod := 10 * time.Second
+		description := fmt.Sprintf("SSH to node %s via bastion host %s", nodeAddr, bastionAddr)
+
+		retry.DoWithRetry(t, description, retryCount, retryPeriod, func() (string, error) {
+			instanceID, err := ssh.CheckPrivateSshConnectionE(t, publicHost, privateHost, `curl -s http://169.254.169.254/latest/meta-data/instance-id`)
+			if err != nil {
+				return "", err
+			}
+
+			if instanceID == "" {
+				return "", errors.New("unexpected instance id for node")
+			}
+
+			logger.Log(t, "Node instance ID:", instanceID)
+
+			return "OK", nil
+		})
+	})
+
+	t.Run("TestClusterConnection", func(t *testing.T) {
 		clusterName := terraform.Output(t, opts, "cluster_name")
 		kubeconfigFile := terraform.Output(t, opts, "kubeconfig_file")
 		opts := k8s.NewKubectlOptions(clusterName, kubeconfigFile, "default")
