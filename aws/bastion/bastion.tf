@@ -311,7 +311,7 @@ resource "aws_security_group" "bastion" {
     from_port   = 22
     to_port     = 22
     cidr_blocks = var.ssh_cidrs
-    description = "Allow ssh access from trusted sources."
+    description = "Allow ssh access from trusted addresses."
   }
 
   # load balancer healtcheck
@@ -321,6 +321,24 @@ resource "aws_security_group" "bastion" {
     to_port         = 22
     cidr_blocks     = var.public_subnets.*.cidr
     description     = "Allow load balancer access for healthchecks."
+  }
+
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group#egress
+
+  egress {
+    protocol    = "tcp"
+    from_port   = 22
+    to_port     = 22
+    cidr_blocks = [ var.vpc.cidr ]
+    description = "Allow outgoing ssh traffic inside the VPC."
+  }
+
+  egress {
+    protocol    = "all"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = [ "0.0.0.0/0" ]
+    description = "Allow all outgoing traffic to the Internet."
   }
 
   tags = merge(var.common_tags, {
