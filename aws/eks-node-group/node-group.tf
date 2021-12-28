@@ -36,8 +36,8 @@ resource "aws_eks_node_group" "node_group" {
   # https://www.terraform.io/docs/language/functions/try.html
   # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_node_group#update_config-configuration-block
   update_config {
-    max_unavailable            = try(var.profile.max_unavailable, null)
-    max_unavailable_percentage = try(var.profile.max_unavailable_percentage, null)
+    max_unavailable            = var.profile.max_unavailable
+    max_unavailable_percentage = var.profile.max_unavailable_percentage
   }
 
   # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_node_group#remote_access-configuration-block
@@ -91,6 +91,18 @@ resource "aws_key_pair" "node_group" {
     ignore_changes = [
       tags,
     ]
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/instances
+data "aws_instances" "instances" {
+  depends_on = [ aws_eks_node_group.node_group ]
+
+  instance_state_names = [ "running" ]
+
+  instance_tags = {
+    "eks:cluster-name"   = var.name
+    "eks:nodegroup-name" = var.name
   }
 }
 

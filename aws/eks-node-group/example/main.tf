@@ -23,18 +23,19 @@ module "bastion" {
   name                = var.name
   region              = var.region
   vpc                 = module.network.vpc
-  public_subnets      = slice(module.network.public_subnets, 0, 2)
+  public_subnets      = slice(module.network.public_subnets, 0, 1)
   ssh_public_key_file = var.bastion_public_key_file
 }
 
 module "cluster" {
   source = "../../eks-cluster"
 
-  name            = var.name
-  region          = var.region
-  vpc_id          = module.network.vpc.id
-  subnet_ids      = module.network.private_subnets.*.id
-  kubeconfig_path = var.kubeconfig_path
+  name               = var.name
+  region             = var.region
+  public_cluster     = true
+  vpc_id             = module.network.vpc.id
+  private_subnet_ids = module.network.private_subnets.*.id
+  kubeconfig_path    = var.kubeconfig_path
 }
 
 module "node_group" {
