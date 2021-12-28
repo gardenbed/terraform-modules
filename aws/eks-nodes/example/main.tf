@@ -16,18 +16,9 @@ module "network" {
   region   = var.region
   az_count = 3
   private_subnet_tags = {
+    # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_node_group#subnet_ids
     "kubernetes.io/cluster/${var.name}" = "shared"
   }
-}
-
-module "cluster" {
-  source = "../../eks-cluster"
-
-  name            = var.name
-  region          = var.region
-  vpc_id          = module.network.vpc.id
-  subnet_ids      = module.network.private_subnets.*.id
-  kubeconfig_path = var.kubeconfig_path
 }
 
 module "bastion" {
@@ -36,8 +27,19 @@ module "bastion" {
   name                = var.name
   region              = var.region
   vpc                 = module.network.vpc
-  public_subnets      = slice(module.network.public_subnets, 0, 2)
+  public_subnets      = slice(module.network.public_subnets, 0, 1)
   ssh_public_key_file = var.bastion_public_key_file
+}
+
+module "cluster" {
+  source = "../../eks-cluster"
+
+  name               = var.name
+  region             = var.region
+  public_cluster     = true
+  vpc_id             = module.network.vpc.id
+  private_subnet_ids = module.network.private_subnets.*.id
+  kubeconfig_path    = var.kubeconfig_path
 }
 
 module "nodes" {
@@ -61,8 +63,6 @@ module "nodes" {
 }
 
 # ====================================================================================================
-#  Kubernetes Resources
-# ====================================================================================================
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/eks_cluster_auth
 data "aws_eks_cluster_auth" "cluster" {
@@ -72,8 +72,8 @@ data "aws_eks_cluster_auth" "cluster" {
 # https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs
 provider "kubernetes" {
   host                   = module.cluster.endpoint
-  cluster_ca_certificate = base64decode(module.cluster.certificate_authority)
   token                  = data.aws_eks_cluster_auth.cluster.token
+  cluster_ca_certificate = base64decode(module.cluster.certificate_authority)
 }
 
 module "nodes_auth" {

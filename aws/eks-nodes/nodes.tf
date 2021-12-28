@@ -44,6 +44,18 @@ resource "aws_autoscaling_group" "nodes" {
   }
 }
 
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/instances
+data "aws_instances" "instances" {
+  depends_on = [ aws_autoscaling_group.nodes ]
+
+  instance_state_names = [ "running" ]
+
+  instance_tags = {
+    "eks:cluster-name" = var.name
+    "Name"             = "${var.name}-node"
+  }
+}
+
 # ====================================================================================================
 #  LAUNCH TEMPLATE
 # ====================================================================================================
@@ -69,7 +81,7 @@ resource "aws_launch_template" "nodes" {
 
   # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/launch_template#network-interfaces
   network_interfaces {
-    associate_public_ip_address = true
+    associate_public_ip_address = false
     delete_on_termination       = true
     security_groups             = [ aws_security_group.nodes.id ]
   }
@@ -91,6 +103,7 @@ resource "aws_launch_template" "nodes" {
     tags = merge(var.common_tags, {
       Name = format("%s-node", var.name)
 
+      "eks:cluster-name"                              = var.name
       "kubernetes.io/cluster/${var.cluster_name}"     = "owned"
       "k8s.io/cluster-autoscaler/${var.cluster_name}" = "owned"
       "k8s.io/cluster-autoscaler/enabled"             = "true"
@@ -307,6 +320,6 @@ resource "aws_security_group_rule" "nodes_egress_all_internet" {
   from_port         = 0
   to_port           = 0
   security_group_id = aws_security_group.nodes.id
-  cidr_blocks       = var.nodes_egress_cidrs
+  cidr_blocks       = var.outgoing_cidrs
   description       = "Allow nodes outbound access to the Internet."
 }
