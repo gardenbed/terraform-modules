@@ -26,12 +26,12 @@ output "node_group_status" {
   value = module.node_group.status
 }
 
-output "bastion_address" {
-  value = module.bastion.load_balancer_dns_name
-}
-
 output "node_group_instances" {
   value = module.node_group.instances
+}
+
+output "bastion_address" {
+  value = module.bastion.load_balancer_dns_name
 }
 
 output "kubeconfig_file" {

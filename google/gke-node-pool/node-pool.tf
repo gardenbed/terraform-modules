@@ -19,7 +19,7 @@ resource "google_container_node_pool" "node_pool" {
   location           = var.region
   cluster            = var.cluster_id
   node_locations     = data.google_compute_zones.available.names
-  initial_node_count = 1
+  initial_node_count = var.initial_node_count
 
   # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_node_pool#nested_management
   management { 
@@ -105,6 +105,7 @@ resource "google_container_node_pool" "node_pool" {
 
     tags = concat(var.nodes.tags, [
       "gke-node",
+      var.name,
       var.network_tag,
     ])
 
@@ -131,4 +132,29 @@ resource "google_container_node_pool" "node_pool" {
 data "google_compute_zones" "available" {
   project = var.project
   region  = var.region
+}
+
+# https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/compute_instance_group
+data "google_compute_instance_group" "node_pool" {
+  # The google_container_node_pool.node_pool.managed_instance_group_urls cannot be determined until apply.
+  # So, Terraform cannot predict how many instances will be created.
+  # We use the number of zones as a proxy for the number of instance groups in the node pool.
+  count = local.zone_count
+
+  project   = var.project
+  self_link = google_container_node_pool.node_pool.managed_instance_group_urls[count.index]
+}
+
+# https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/compute_instance
+data "google_compute_instance" "instances" {
+  # The data.google_compute_instance_group.node_pool.instances  cannot be determined until apply.
+  # So, Terraform cannot predict how many instances will be created.
+  # We use the combination of number of zones multiplied by the initial number of nodes as a proxy for the number of instances in the node pool.
+  count = local.total_node_count
+
+  project   = var.project
+  self_link = element(
+    flatten(data.google_compute_instance_group.node_pool.*.instances),
+    count.index,
+  )
 }

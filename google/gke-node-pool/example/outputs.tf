@@ -41,6 +41,14 @@ output "node_pool_id" {
   value = module.node_pool.id
 }
 
+output "node_pool_instances" {
+  value = module.node_pool.instances
+}
+
+output "bastion_address" {
+  value = module.bastion.address
+}
+
 output "kubeconfig_file" {
   value = module.cluster.kubeconfig_file
 }

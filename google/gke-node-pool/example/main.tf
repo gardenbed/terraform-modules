@@ -38,14 +38,14 @@ module "bastion" {
 module "cluster" {
   source = "../../gke-cluster"
 
-  name               = var.name
-  project            = var.project
-  region             = var.region
-  network            = module.network.network
-  public_subnetwork  = module.network.public_subnetwork
-  private_subnetwork = module.network.private_subnetwork
-  public_cluster     = true
-  kubeconfig_path    = var.kubeconfig_path
+  name                   = var.name
+  project                = var.project
+  region                 = var.region
+  public_cluster         = true
+  network                = module.network.network.id
+  private_subnetwork     = module.network.private_subnetwork.id
+  public_subnetwork_cidr = module.network.public_subnetwork.primary_cidr
+  kubeconfig_path        = var.kubeconfig_path
 }
 
 module "node_pool" {
