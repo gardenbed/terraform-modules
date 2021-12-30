@@ -1,4 +1,9 @@
-# terraform-modules
+# Terraform Modules
+
+This is a central repository for all [Terraform](https://www.terraform.io) modules used by *GardenBed* projects.
+
+The modules are organized by cloud provider, one directory per each provider (`aws`, `google`, etc.).
+Tests are organized in a separate directory (`test`) by cloud provider, one directory per each provider (`test/aws`, `test/google`, etc.).
 
 ## References
 
@@ -14,4 +19,3 @@
     - [Providers Within Modules](https://www.terraform.io/docs/language/modules/develop/providers.html)
     - [Module Composition](https://www.terraform.io/docs/language/modules/develop/composition.html)
     - [Publishing Modules](https://www.terraform.io/docs/language/modules/develop/publish.html)
-    
