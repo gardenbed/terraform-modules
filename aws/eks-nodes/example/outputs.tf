@@ -18,6 +18,14 @@ output "cluster_oidc_url" {
   value = module.cluster.oidc_url
 }
 
+output "node_instances" {
+  value = module.nodes.instances
+}
+
+output "bastion_address" {
+  value = module.bastion.load_balancer_dns_name
+}
+
 output "kubeconfig_file" {
   value = module.cluster.kubeconfig_file
 }

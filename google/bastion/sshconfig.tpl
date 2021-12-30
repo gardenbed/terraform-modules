@@ -1,5 +1,5 @@
 Host bastion
-  HostName ${host}
+  HostName ${address}
   User admin
   IdentityFile ${private_key}
   StrictHostKeyChecking no

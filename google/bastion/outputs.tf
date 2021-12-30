@@ -3,7 +3,7 @@
 
 output "address" {
   description = "The static external IP address of the load balancer."
-  value = google_compute_address.bastion_ssh.0.address
+  value = var.enable_ssh_keys ? google_compute_address.bastion_ssh.0.address : null
 }
 
 output "ssh_config_file" {

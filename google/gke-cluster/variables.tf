@@ -43,27 +43,21 @@ variable "release_channel" {
 # ==================================================< NETWORK >==================================================
 
 variable "network" {
-  description = "The VPC network information."
-  type = object({
-    id = string
-  })
-  nullable = false
-}
-
-variable "public_subnetwork" {
-  description = "The VPC public subnetwork information. This has to be specified if public_cluster is true."
-  type = object({
-    id           = string
-    primary_cidr = string
-  })
+  description = "The name, id, or self_link of the network for the cluster's instances."
+  type        = string
+  nullable    = false
 }
 
 variable "private_subnetwork" {
-  description = "The VPC private subnetwork information. This has to be specified if public_cluster is false."
-  type = object({
-    id           = string
-    primary_cidr = string
-  })
+  description = "The name, id, or self_link of the private subnetwork for launching the cluster's instances in."
+  type        = string
+  nullable    = false
+}
+
+variable "public_subnetwork_cidr" {
+  description = "The primary CIDR block of the public subnetwork for allowing access to the cluster through HTTPS."
+  type        = string
+  nullable    = false
 }
 
 variable "pods_secondary_range_name" {

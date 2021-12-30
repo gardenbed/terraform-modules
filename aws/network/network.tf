@@ -1,3 +1,4 @@
+# https://www.terraform.io/docs/language/meta-arguments/lifecycle.html#create_before_destroy
 # https://www.terraform.io/docs/language/meta-arguments/lifecycle.html#ignore_changes
 #   We ignore changes to tags since they can take new values on each run (terraform plan/apply).
 #   These updates are based on semantic rules managed outside of the Terraform scope.
@@ -149,7 +150,7 @@ resource "aws_route_table" "public" {
 
   route {
     ipv6_cidr_block = "::/0"
-    gateway_id = aws_internet_gateway.main.0.id
+    gateway_id      = aws_internet_gateway.main.0.id
   }
 
   tags = merge(var.common_tags, {
@@ -177,7 +178,7 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block     = "0.0.0.0/0"
     nat_gateway_id = element(aws_nat_gateway.main.*.id, count.index)
   }
 

@@ -39,19 +39,11 @@ variable "network_tag" {
   nullable    = false
 }
 
-variable "upgrade" {
-  description = "Upgrade settings for the node pool."
-  type = object({
-    auto            = bool
-    max_surge       = number
-    max_unavailable = number
-  })
-  nullable = false
-  default = {
-    auto            = true
-    max_surge       = 1
-    max_unavailable = 1
-  }
+variable "initial_node_count" {
+  description = "The initial number of nodes in each zone."
+  type        = number
+  nullable    = false
+  default     = 1
 }
 
 variable "autoscaling" {
@@ -66,6 +58,21 @@ variable "autoscaling" {
     enabled        = true
     min_node_count = 1
     max_node_count = 10
+  }
+}
+
+variable "upgrade" {
+  description = "Upgrade settings for the node pool."
+  type = object({
+    auto            = bool
+    max_surge       = number
+    max_unavailable = number
+  })
+  nullable = false
+  default = {
+    auto            = true
+    max_surge       = 1
+    max_unavailable = 1
   }
 }
 

@@ -1,5 +1,6 @@
 # https://www.terraform.io/docs/language/values/locals.html
 locals {
+  size          = length(var.public_subnets)
   bucket_prefix = "load-balancer"
 
   # https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html#access-logging-bucket-permissions

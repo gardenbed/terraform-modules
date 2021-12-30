@@ -29,7 +29,7 @@ variable "subnet_cidrs" {
   nullable    = false
 }
 
-variable "nodes_egress_cidrs" {
+variable "outgoing_cidrs" {
   description = "A list of trusted CIDR blocks that are permitted for the nodes egress traffic."
   type        = set(string)
   nullable    = false

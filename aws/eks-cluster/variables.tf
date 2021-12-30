@@ -15,6 +15,13 @@ variable "region" {
 
 # ==================================================< CLUSTER >==================================================
 
+variable "public_cluster" {
+  description = "Determines if the cluser is public or private."
+  type        = bool
+  nullable    = false
+  default     = false
+}
+
 variable "cluster_version" {
   description = "Kubernetes minor version to use for the cluster (e.g. 1.22)."
   type        = string
@@ -36,12 +43,11 @@ variable "vpc_id" {
   nullable    = false
 }
 
-variable "subnet_ids" {
-  description = "The list of subnet IDs for placing the cluster within."
+variable "private_subnet_ids" {
+  description = "The list of private subnet IDs for placing the cluster within."
   type        = set(string)
   nullable    = false
 }
-
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_cluster#kubernetes_network_config
 variable "cluster_service_ipv4_cidr" {
@@ -51,7 +57,7 @@ variable "cluster_service_ipv4_cidr" {
   default     = "10.100.0.0/16"
 }
 
-variable "public_api_cidrs" {
+variable "public_access_cidrs" {
   description = "A list of trusted CIDR blocks that can access the cluster public API server endpoint."
   type        = set(string)
   nullable    = false

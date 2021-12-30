@@ -160,11 +160,63 @@ func TestTerraform_Google_GKE_Node_Pool(t *testing.T) {
 		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_client_key"))
 		assert.NotEmpty(t, terraform.Output(t, opts, "cluster_service_account_email"))
 		assert.NotEmpty(t, terraform.Output(t, opts, "node_pool_id"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "node_pool_instances"))
+		assert.NotEmpty(t, terraform.Output(t, opts, "bastion_address"))
 		assert.NotEmpty(t, terraform.Output(t, opts, "kubeconfig_file"))
 		assert.NotEmpty(t, terraform.Output(t, opts, "ssh_config_file"))
 	})
 
-	t.Run("TestConnection", func(t *testing.T) {
+	t.Run("TestNodeSSH", func(t *testing.T) {
+		bastionAddr := terraform.Output(t, opts, "bastion_address")
+
+		instances := terraform.OutputListOfObjects(t, opts, "node_pool_instances")
+		if len(instances) == 0 {
+			t.FailNow()
+		}
+
+		networkIP, exist := instances[0]["network_ip"]
+		if !exist {
+			t.FailNow()
+		}
+
+		nodeAddr, ok := networkIP.(string)
+		if !ok {
+			t.FailNow()
+		}
+
+		publicHost := ssh.Host{
+			Hostname:    bastionAddr,
+			SshKeyPair:  bastionKeypair.KeyPair,
+			SshUserName: "admin",
+		}
+
+		privateHost := ssh.Host{
+			Hostname:    nodeAddr,
+			SshKeyPair:  nodeKeypair.KeyPair,
+			SshUserName: "admin",
+		}
+
+		retryCount := 30
+		retryPeriod := 10 * time.Second
+		description := fmt.Sprintf("SSH to node %s via bastion instance %s", nodeAddr, bastionAddr)
+
+		retry.DoWithRetry(t, description, retryCount, retryPeriod, func() (string, error) {
+			name, err := ssh.CheckPrivateSshConnectionE(t, publicHost, privateHost, `curl -s -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/name"`)
+			if err != nil {
+				return "", err
+			}
+
+			if name == "" {
+				return "", errors.New("unexpected name for node")
+			}
+
+			logger.Log(t, "Node instance name:", name)
+
+			return "OK", nil
+		})
+	})
+
+	t.Run("TestClusterConnection", func(t *testing.T) {
 		clusterName := terraform.Output(t, opts, "cluster_name")
 		kubeconfigFile := terraform.Output(t, opts, "kubeconfig_file")
 		opts := k8s.NewKubectlOptions(clusterName, kubeconfigFile, "default")

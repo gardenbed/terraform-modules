@@ -76,6 +76,15 @@ variable "enable_private_subnets" {
   default     = true
 }
 
+# ==================================================< SUBNETS >==================================================
+
+variable "outgoing_cidrs" {
+  description = "A list of trusted CIDR blocks for vpc outgoing traffic."
+  type        = list(string)
+  nullable    = false
+  default     = [ "0.0.0.0/0" ]
+}
+
 # ==================================================< TAGS >==================================================
 
 variable "common_tags" {

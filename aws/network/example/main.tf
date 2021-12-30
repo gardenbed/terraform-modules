@@ -8,7 +8,8 @@ provider "aws" {
 module "network" {
   source = "../"
 
-  name     = var.name
-  region   = var.region
-  az_count = 3
+  name            = var.name
+  region          = var.region
+  az_count        = 3
+  enable_vpc_logs = true
 }

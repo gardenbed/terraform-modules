@@ -45,5 +45,5 @@ output "additional_security_group_ids" {
 
 output "kubeconfig_file" {
   description = "The path to kubectl config file for the cluster."
-  value       = local_file.kubeconfig.filename
+  value       = var.public_cluster ? local_file.kubeconfig.0.filename : null
 }

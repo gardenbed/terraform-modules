@@ -22,8 +22,8 @@ resource "google_container_cluster" "cluster" {
 
   # Public and private subnetworks both have outbound access to the Internet.
   # Public subnetwork is reachable from the Internet whereas the private one is not.
-  network         = var.network.id
-  subnetwork      = var.public_cluster ? var.public_subnetwork.id : var.private_subnetwork.id
+  network         = var.network
+  subnetwork      = var.private_subnetwork
   networking_mode = "VPC_NATIVE"  # VPC_NATIVE, ROUTES
 
   # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_cluster#nested_ip_allocation_policy
@@ -37,8 +37,8 @@ resource "google_container_cluster" "cluster" {
   # https://cloud.google.com/kubernetes-engine/docs/how-to/private-clusters#req_res_lim
   # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_cluster#nested_private_cluster_config
   private_cluster_config {
-    enable_private_nodes    = var.public_cluster ? false : true
-    enable_private_endpoint = var.public_cluster ? false : true
+    enable_private_nodes    = !var.public_cluster
+    enable_private_endpoint = !var.public_cluster
     master_ipv4_cidr_block  = var.public_cluster ? null  : local.master_ipv4_cidr
   }
 
@@ -46,8 +46,8 @@ resource "google_container_cluster" "cluster" {
   # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_cluster#nested_master_authorized_networks_config
   dynamic "master_authorized_networks_config" {
     for_each = var.public_cluster ? [] : [{
-      cidr_block   = var.public_subnetwork.primary_cidr
-      display_name = "Allow public subnetwork access"
+      cidr_block   = var.public_subnetwork_cidr
+      display_name = "Allow public subnetwork accessing private cluster"
     }]
 
     content {
