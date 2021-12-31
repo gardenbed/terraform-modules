@@ -34,26 +34,22 @@ resource "google_container_cluster" "cluster" {
     services_ipv4_cidr_block      = var.services_secondary_range_name == null ? "/16" : null
   }
 
-  # https://cloud.google.com/kubernetes-engine/docs/how-to/private-clusters#req_res_lim
   # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_cluster#nested_private_cluster_config
   private_cluster_config {
-    enable_private_nodes    = !var.public_cluster
+    enable_private_nodes    = true
     enable_private_endpoint = !var.public_cluster
-    master_ipv4_cidr_block  = var.public_cluster ? null  : local.master_ipv4_cidr
+    master_ipv4_cidr_block  = local.master_ipv4_cidr
   }
 
   # https://www.terraform.io/docs/language/expressions/dynamic-blocks.html
   # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_cluster#nested_master_authorized_networks_config
   dynamic "master_authorized_networks_config" {
-    for_each = var.public_cluster ? [] : [{
-      cidr_block   = var.public_subnetwork_cidr
-      display_name = "Allow public subnetwork accessing private cluster"
-    }]
+    for_each = var.public_cluster ? [] : [{}]
 
     content {
       cidr_blocks {
-        cidr_block   = master_authorized_networks_config.value.cidr_block
-        display_name = master_authorized_networks_config.value.display_name
+        cidr_block   = var.public_subnetwork_cidr
+        display_name = "Allow public subnetwork accessing private cluster"
       }
     }
   }

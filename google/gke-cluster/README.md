@@ -53,8 +53,9 @@ module "cluster" {
 ## Documentation
 
 The cluster is a **Regional** and **VPC-native** cluster. The cluster is *private* by default, but can be deployed as *public* too.
-**The cluster resources will be always deployed to private subnets.**
-If the cluster is private, the public subnetwork primary CIDR (`public_subnetwork_cidr`) is allowed to access the cluster through HTTPS.
+**The cluster resources will be always deployed to private subnets. The cluster is always a private cluster**.
+If `public_cluster` is `false` (default), the cluster endpoint is private and only the public subnetwork (`public_subnetwork_cidr`) is allowed to access the cluster through HTTPS.
+If `public_cluster` is `true`, the cluster endpoint is public and can be accessed from the Internet.
 
 You can specify a secondary range name in the cluster's subnetwork (public or private) for the pod IP addresses (`pods_secondary_range_name`).
 You can also specify a secondary range name in the cluster's subnetwork (public or private) for the service IP addresses (`services_secondary_range_name`).
