@@ -83,3 +83,7 @@ The nodes can be accessed via SSH indirectly and through the bastion hosts.
 An SSH config file can be generated for easily accessing the nodes through the Bastion hosts.
 
     $ ssh -F config-<name> <node_private_ip>
+
+### Networking
+
+Nodes are assigned IP addresses from the subnet (private) CIDRs.

@@ -104,6 +104,8 @@ module "node_pool" {
 A [Node Pool](https://cloud.google.com/kubernetes-engine/docs/concepts/node-pools)
 is a managed group of nodes for a GKE cluster that all have the same configuration.
 
+For networking information, please see the cluster documentation [here](../gke-cluster/README.md#networking).
+
 Nodes are distributted in all available zones in the region.
 The `initial_node_count`, `min_node_count`, and `max_node_count` denote the initial/minimum/maximum number of nodes in each zone.
 
