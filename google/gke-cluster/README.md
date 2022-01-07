@@ -104,6 +104,9 @@ If `services_secondary_range_name` is not set (default), a `/16` netmask will be
 
   - **VPC**
     - [Alias IP ranges overview](https://cloud.google.com/vpc/docs/alias-ip)
+  - **Security**
+    - [Control plane security](https://cloud.google.com/kubernetes-engine/docs/concepts/control-plane-security)
+    - [Protecting cluster metadata](https://cloud.google.com/kubernetes-engine/docs/how-to/protecting-cluster-metadata)
   - **GKE**
     - [VPC-native clusters](https://cloud.google.com/kubernetes-engine/docs/concepts/alias-ips)
     - [Autopilot overview](https://cloud.google.com/kubernetes-engine/docs/concepts/autopilot-overview)
