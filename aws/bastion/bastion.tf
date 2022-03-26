@@ -136,13 +136,14 @@ resource "aws_autoscaling_group" "bastion" {
   }
 
   # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group#tag-and-tags
-  tags = [
-    for k, v in merge(var.common_tags, { Name = "${var.name}-bastion" }): {
-      key                 = k
-      value               = v
+  dynamic "tag" {
+    for_each = merge(var.common_tags, { Name = "${var.name}-bastion" })
+    content {
+      key                 = tag.key
+      value               = tag.value
       propagate_at_launch = true
     }
-  ]
+  }
 
   lifecycle {
     create_before_destroy = true

@@ -6,17 +6,15 @@
 #  S3
 # ====================================================================================================
 
+# https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id
+resource "random_id" "bastion_bucket" {
+  byte_length = 8
+}
+
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket
 resource "aws_s3_bucket" "bastion" {
   bucket        = "${var.name}-bastion-${random_id.bastion_bucket.hex}"
-  acl           = "private"
   force_destroy = true
-
-  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket#versioning
-  # https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html
-  versioning {
-    enabled = true
-  }
 
   tags = merge(var.common_tags, {
     Name = format("%s-bastion", var.name)
@@ -29,14 +27,24 @@ resource "aws_s3_bucket" "bastion" {
   }
 }
 
-# https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id
-resource "random_id" "bastion_bucket" {
-  byte_length = 8
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_acl
+resource "aws_s3_bucket_acl" "bastion" {
+  bucket = aws_s3_bucket.bastion.id
+  acl    = "private"
+}
+
+# https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_versioning
+resource "aws_s3_bucket_versioning" "bastion" {
+  bucket = aws_s3_bucket.bastion.id
+  versioning_configuration {
+    status = "Enabled"
+  }
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block
 # https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html
-resource "aws_s3_bucket_public_access_block" "kops" {
+resource "aws_s3_bucket_public_access_block" "bastion" {
   bucket = aws_s3_bucket.bastion.id
 
   block_public_acls       = true

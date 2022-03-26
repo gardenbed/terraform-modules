@@ -7,15 +7,15 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "~> 4.5"
+      version = "~> 4.15"
     }
     google-beta = {
       source  = "hashicorp/google-beta"
-      version = "~> 4.5"
+      version = "~> 4.15"
     }
     local = {
       source  = "hashicorp/local"
-      version = "~> 2.1"
+      version = "~> 2.2"
     }
     template = {
       source  = "hashicorp/template"
