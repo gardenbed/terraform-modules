@@ -103,7 +103,7 @@ resource "aws_lb" "bastion" {
 resource "aws_eip" "bastion" {
   count = local.size
 
-  vpc = true
+  domain = "vpc"
 
   tags = merge(var.common_tags, {
     Name = format("%s-bastion-%d", var.name, count.index + 1)
@@ -148,7 +148,7 @@ resource "aws_autoscaling_group" "bastion" {
   lifecycle {
     create_before_destroy = true
     ignore_changes = [
-      tags,
+      tag,
     ]
   }
 }
