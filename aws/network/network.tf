@@ -117,7 +117,7 @@ resource "aws_nat_gateway" "main" {
 resource "aws_eip" "nat" {
   count = var.enable_private_subnets ? local.az_len : 0
 
-  vpc = true
+  domain = "vpc"
 
   tags = merge(var.common_tags, {
     Name   = format("%s-nat-%d", var.name, count.index + 1)
