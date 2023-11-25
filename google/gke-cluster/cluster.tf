@@ -63,8 +63,12 @@ resource "google_container_cluster" "cluster" {
 
   # ========================================> SCURITY <========================================
 
-  enable_shielded_nodes       = true
-  enable_binary_authorization = true
+  enable_shielded_nodes = true
+
+  # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_cluster#nested_binary_authorization
+  binary_authorization {
+    evaluation_mode = "PROJECT_SINGLETON_POLICY_ENFORCE"
+  }
 
   # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/container_cluster#nested_master_auth
   master_auth {
