@@ -3,11 +3,12 @@
 
 terraform {
   # Reusable modules should constrain only their minimum allowed versions of Terraform and providers.
-  required_version = ">= 1.1.7"
+  required_version = ">= 1.8.1"
+
   required_providers {
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = ">= 2.9.0"
+      version = ">= 2.29.0"
     }
   }
 }

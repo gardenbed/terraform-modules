@@ -3,15 +3,16 @@
 
 terraform {
   # Reusable modules should constrain only their minimum allowed versions of Terraform and providers.
-  required_version = ">= 1.1.7"
+  required_version = ">= 1.8.1"
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 4.8.0"
+      version = ">= 5.46.0"
     }
     local = {
       source  = "hashicorp/local"
-      version = ">= 2.2.2"
+      version = ">= 2.5.1"
     }
     template = {
       source  = "hashicorp/template"
