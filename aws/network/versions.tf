@@ -3,12 +3,13 @@
 
 terraform {
   # Reusable modules should constrain only their minimum allowed versions of Terraform and providers.
-  required_version = ">= 1.8.1"
+  required_version = ">= 1.12.2"
 
   required_providers {
+    # https://registry.terraform.io/providers/hashicorp/aws/latest
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 5.46.0"
+      version = ">= 6.0.0"
     }
   }
 }

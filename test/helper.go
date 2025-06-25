@@ -2,7 +2,6 @@ package test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -55,12 +54,12 @@ func CreateSSHKeyPair(t *testing.T, prefix string) (*SSHKeyPair, error) {
 	}
 
 	// Write public file (-rw-r--r--)
-	if err := ioutil.WriteFile(publicFile, []byte(pair.PublicKey), 0644); err != nil {
+	if err := os.WriteFile(publicFile, []byte(pair.PublicKey), 0644); err != nil {
 		return nil, err
 	}
 
 	// Write private file (-rw-------)
-	if err := ioutil.WriteFile(privateFile, []byte(pair.PrivateKey), 0600); err != nil {
+	if err := os.WriteFile(privateFile, []byte(pair.PrivateKey), 0600); err != nil {
 		return nil, err
 	}
 

@@ -3,12 +3,13 @@
 
 terraform {
   # Root modules should constraint both a lower and upper bound on versions of Terraform and providers.
-  required_version = "~> 1.8"
+  required_version = "~> 1.12"
 
   required_providers {
+    # https://registry.terraform.io/providers/hashicorp/aws/latest
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.46"
+      version = "~> 6.0"
     }
   }
 }
