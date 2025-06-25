@@ -3,24 +3,28 @@
 
 terraform {
   # Reusable modules should constrain only their minimum allowed versions of Terraform and providers.
-  required_version = ">= 1.8.1"
+  required_version = ">= 1.12.2"
 
   required_providers {
+    # https://registry.terraform.io/providers/hashicorp/google/latest
     google = {
       source  = "hashicorp/google"
-      version = ">= 5.25.0"
+      version = ">= 6.41.0"
     }
+    # https://registry.terraform.io/providers/hashicorp/local/latest
     local = {
       source  = "hashicorp/local"
-      version = ">= 2.5.1"
+      version = ">= 2.5.3"
     }
+    # https://registry.terraform.io/providers/hashicorp/template/latest
     template = {
       source  = "hashicorp/template"
       version = ">= 2.2.0"
     }
+    # https://registry.terraform.io/providers/hashicorp/random/latest
     random = {
       source  = "hashicorp/random"
-      version = ">= 3.6.1"
+      version = ">= 3.7.2"
     }
   }
 }

@@ -3,5 +3,5 @@
 
 terraform {
   # Reusable modules should constrain only their minimum allowed versions of Terraform and providers.
-  required_version = ">= 1.8.1"
+  required_version = ">= 1.12.2"
 }
