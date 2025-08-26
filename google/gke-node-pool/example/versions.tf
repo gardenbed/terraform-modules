@@ -14,7 +14,7 @@ terraform {
     # https://registry.terraform.io/providers/hashicorp/google-beta/latest
     google-beta = {
       source  = "hashicorp/google-beta"
-      version = "~> 6.41"
+      version = "~> 7.0"
     }
     # https://registry.terraform.io/providers/hashicorp/local/latest
     local = {
