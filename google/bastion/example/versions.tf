@@ -9,7 +9,7 @@ terraform {
     # https://registry.terraform.io/providers/hashicorp/google/latest
     google = {
       source  = "hashicorp/google"
-      version = "~> 6.41"
+      version = "~> 7.0"
     }
     # https://registry.terraform.io/providers/hashicorp/local/latest
     local = {
